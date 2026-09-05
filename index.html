@@ -1,0 +1,2231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Management System</title>
+    <style>
+        /* ... (same CSS as before, no changes needed) ... */
+        :root {
+            --bg: #f0f2f5;
+            --sidebar-bg: #0f1a2e;
+            --sidebar-hover: #1a2d47;
+            --sidebar-active: #1e3a5f;
+            --card-bg: #ffffff;
+            --text-primary: #1a1a2e;
+            --text-secondary: #5a6a7e;
+            --text-muted: #8a9aa8;
+            --accent: #2e7d32;
+            --accent-light: #4caf50;
+            --accent-bg: #e8f5e9;
+            --danger: #d32f2f;
+            --danger-bg: #ffebee;
+            --warning: #f57c00;
+            --warning-bg: #fff3e0;
+            --info: #1976d2;
+            --info-bg: #e3f2fd;
+            --success: #388e3c;
+            --success-bg: #e8f5e9;
+            --border: #e0e4e8;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+            --radius: 10px;
+            --radius-sm: 6px;
+            --sidebar-width: 240px;
+            --topbar-height: 60px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        /* ... all existing CSS rules ... */
+    </style>
+</head>
+<body>
+
+    <!-- ============ LOGIN OVERLAY ============ -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <div class="logo">🌾</div>
+            <h2 data-i18n="appTitle">Business Management System</h2>
+            <div class="form-group">
+                <label data-i18n="username">Username</label>
+                <input type="text" id="loginUsername" placeholder="Enter username" value="admin">
+            </div>
+            <div class="form-group">
+                <label data-i18n="password">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter password">
+            </div>
+            <button class="btn btn-primary" onclick="login()" data-i18n="signIn">Sign In</button>
+            <div class="login-error" id="loginError">Invalid credentials. Please try again.</div>
+            <div class="login-footer">Default admin: admin / 0756448405@bA</div>
+        </div>
+    </div>
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="logo-icon">🌾</div>
+            <span>BMS</span>
+        </div>
+        <nav class="sidebar-nav" id="sidebarNav">
+            <div class="nav-section" data-i18n="main">Main</div>
+            <div class="nav-item active" data-page="dashboard" onclick="navigateTo('dashboard')">
+                <span class="nav-icon">📊</span> <span data-i18n="dashboard">Dashboard</span>
+            </div>
+            <div class="nav-item" data-page="purchases" onclick="navigateTo('purchases')">
+                <span class="nav-icon">🚜</span> <span data-i18n="purchases">Purchases</span>
+            </div>
+            <div class="nav-item" data-page="inventory" onclick="navigateTo('inventory')">
+                <span class="nav-icon">🏭</span> <span data-i18n="inventory">Inventory</span>
+            </div>
+            <div class="nav-item" data-page="grading" onclick="navigateTo('grading')">
+                <span class="nav-icon">🔬</span> <span data-i18n="grading">Grading & Sorting</span>
+            </div>
+            <div class="nav-item" data-page="sales" onclick="navigateTo('sales')">
+                <span class="nav-icon">💰</span> <span data-i18n="sales">Sales</span>
+            </div>
+            <div class="nav-item" data-page="credit" onclick="navigateTo('credit')">
+                <span class="nav-icon">📋</span> <span data-i18n="credit">Credit & Collections</span>
+                <span class="badge" id="creditBadge" style="display:none;">0</span>
+            </div>
+            <div class="nav-section" data-i18n="finance">Finance</div>
+            <div class="nav-item" data-page="expenses" onclick="navigateTo('expenses')">
+                <span class="nav-icon">🧾</span> <span data-i18n="expenses">Expenses</span>
+            </div>
+            <div class="nav-item" data-page="finance" onclick="navigateTo('finance')">
+                <span class="nav-icon">📈</span> <span data-i18n="financeTitle">Finance & Profit</span>
+            </div>
+            <div class="nav-item" data-page="reports" onclick="navigateTo('reports')">
+                <span class="nav-icon">📑</span> <span data-i18n="reports">Reports</span>
+            </div>
+            <div class="nav-section" data-i18n="system">System</div>
+            <div class="nav-item" data-page="users" onclick="navigateTo('users')">
+                <span class="nav-icon">👥</span> <span data-i18n="users">Users & Security</span>
+            </div>
+        </nav>
+        <div class="sidebar-footer">BMS v2.0 © 2025</div>
+    </aside>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <header class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()">☰</button>
+            <span class="page-title" id="pageTitle">Dashboard</span>
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" placeholder="Search..." id="globalSearch" oninput="handleSearch(this.value)">
+            </div>
+            <!-- Language Switcher -->
+            <select id="languageSelector" onchange="setLanguage(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-primary); font-size: 13px;">
+                <option value="en">English</option>
+                <option value="lg">Luganda</option>
+            </select>
+            <div class="user-info" onclick="navigateTo('users')" title="User Profile">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div>
+                    <div class="user-name" id="currentUserName">Admin</div>
+                    <div class="user-role" id="currentUserRole">Administrator</div>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()" title="Logout">⏻</button>
+        </header>
+
+        <!-- Page Content -->
+        <div class="page-content" id="pageContent">
+            <!-- Dashboard Page -->
+            <div id="page-dashboard" class="page active">
+                <div class="stats-grid" id="dashboardStats"></div>
+                <div class="quick-actions">
+                    <button class="quick-btn primary" onclick="openPurchaseModal()">➕ <span data-i18n="newPurchase">New Purchase</span></button>
+                    <button class="quick-btn success" onclick="openSaleModal()">💰 <span data-i18n="newSale">New Sale</span></button>
+                    <button class="quick-btn warning" onclick="openPaymentModal()">📝 <span data-i18n="recordPayment">Record Payment</span></button>
+                    <button class="quick-btn" onclick="openExpenseModal()">🧾 <span data-i18n="addExpense">Add Expense</span></button>
+                </div>
+                <div class="table-container mt-16">
+                    <div class="table-header">
+                        <h3 data-i18n="recentActivity">📋 Recent Activity</h3>
+                        <button class="btn btn-sm btn-secondary" onclick="navigateTo('reports')" data-i18n="viewAll">View All</button>
+                    </div>
+                    <div id="recentActivity"></div>
+                </div>
+            </div>
+
+            <!-- Purchases Page -->
+            <div id="page-purchases" class="page" style="display:none;">
+                <div class="flex-between mb-16 flex-wrap gap-8">
+                    <h2 style="font-size:20px;">🚜 <span data-i18n="purchases">Purchases (Farmers)</span></h2>
+                    <button class="btn btn-primary" onclick="openPurchaseModal()">➕ <span data-i18n="newPurchase">New Purchase</span></button>
+                </div>
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 data-i18n="purchaseRecords">Purchase Records</h3>
+                        <input type="date" id="purchaseFilterDate" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;" onchange="renderPurchases()">
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead><tr>
+                                <th data-i18n="date">Date</th><th data-i18n="supplier">Supplier</th><th data-i18n="netKg">Net Kg</th><th data-i18n="pricePerKg">Price/Kg</th><th data-i18n="total">Total</th><th data-i18n="paid">Paid</th><th data-i18n="balance">Balance</th><th data-i18n="status">Status</th><th data-i18n="actions">Actions</th>
+                            </tr></thead>
+                            <tbody id="purchasesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Page -->
+            <div id="page-inventory" class="page" style="display:none;">
+                <div class="flex-between mb-16 flex-wrap gap-8">
+                    <h2 style="font-size:20px;">🏭 <span data-i18n="inventory">Inventory / Warehouse</span></h2>
+                    <button class="btn btn-primary" onclick="openTransferModal()">📦 <span data-i18n="transferStock">Transfer Stock</span></button>
+                </div>
+                <div class="stats-grid" id="inventoryStats"></div>
+                <div class="table-container mt-16">
+                    <div class="table-header"><h3 data-i18n="stockByWarehouse">Stock by Warehouse</h3></div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead><tr><th data-i18n="warehouse">Warehouse</th><th data-i18n="grade">Grade</th><th data-i18n="sacks">Sacks</th><th data-i18n="kg">Kg</th><th data-i18n="trueCostKg">True Cost/Kg</th><th data-i18n="totalValue">Total Value</th><th data-i18n="actions">Actions</th></tr></thead>
+                            <tbody id="inventoryTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grading Page -->
+            <div id="page-grading" class="page" style="display:none;">
+                <div class="flex-between mb-16 flex-wrap gap-8">
+                    <h2 style="font-size:20px;">🔬 <span data-i18n="grading">Grading & Sorting</span></h2>
+                    <button class="btn btn-primary" onclick="openGradingModal()">➕ <span data-i18n="newSortingBatch">New Sorting Batch</span></button>
+                </div>
+                <div class="table-container">
+                    <div class="table-header"><h3 data-i18n="sortingRecords">Sorting Records</h3></div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead><tr><th data-i18n="date">Date</th><th data-i18n="inputKg">Input Kg</th><th data-i18n="grade1">Grade 1</th><th data-i18n="grade2">Grade 2</th><th data-i18n="reject">Reject</th><th data-i18n="lossPercent">Loss %</th><th data-i18n="labourCost">Labour Cost</th><th data-i18n="actions">Actions</th></tr></thead>
+                            <tbody id="gradingTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Page -->
+            <div id="page-sales" class="page" style="display:none;">
+                <div class="flex-between mb-16 flex-wrap gap-8">
+                    <h2 style="font-size:20px;">💰 <span data-i18n="sales">Sales (Wholesale)</span></h2>
+                    <button class="btn btn-success" onclick="openSaleModal()">➕ <span data-i18n="newSale">New Sale</span></button>
+                </div>
+                <div class="table-container">
+                    <div class="table-header"><h3 data-i18n="salesRecords">Sales Records</h3></div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead><tr><th data-i18n="date">Date</th><th data-i18n="customer">Customer</th><th data-i18n="grade">Grade</th><th data-i18n="kg">Kg</th><th data-i18n="pricePerKg">Price/Kg</th><th data-i18n="total">Total</th><th data-i18n="paid">Paid</th><th data-i18n="balance">Balance</th><th data-i18n="status">Status</th><th data-i18n="actions">Actions</th></tr></thead>
+                            <tbody id="salesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Credit Page -->
+            <div id="page-credit" class="page" style="display:none;">
+                <div class="flex-between mb-16 flex-wrap gap-8">
+                    <h2 style="font-size:20px;">📋 <span data-i18n="credit">Credit & Collections</span></h2>
+                    <button class="btn btn-warning" onclick="openPaymentModal()">📝 <span data-i18n="recordPayment">Record Payment</span></button>
+                </div>
+                <div class="stats-grid" id="creditStats"></div>
+                <div class="table-container mt-16">
+                    <div class="table-header"><h3 data-i18n="customerBalances">Customer Balances & Aging</h3></div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead><tr><th data-i18n="customer">Customer</th><th data-i18n="totalCredit">Total Credit</th><th data-i18n="paid">Paid</th><th data-i18n="balance">Balance</th><th data-i18n="aging">Aging</th><th data-i18n="status">Status</th><th data-i18n="actions">Actions</th></tr></thead>
+                            <tbody id="creditTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expenses Page -->
+            <div id="page-expenses" class="page" style="display:none;">
+                <div class="flex-between mb-16 flex-wrap gap-8">
+                    <h2 style="font-size:20px;">🧾 <span data-i18n="expenses">Expenses</span></h2>
+                    <button class="btn btn-primary" onclick="openExpenseModal()">➕ <span data-i18n="addExpense">Add Expense</span></button>
+                </div>
+                <div class="stats-grid" id="expenseStats"></div>
+                <div class="table-container mt-16">
+                    <div class="table-header"><h3 data-i18n="expenseRecords">Expense Records</h3></div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead><tr><th data-i18n="date">Date</th><th data-i18n="category">Category</th><th data-i18n="amount">Amount (UGX)</th><th data-i18n="note">Note</th><th data-i18n="actions">Actions</th></tr></thead>
+                            <tbody id="expensesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Finance Page -->
+            <div id="page-finance" class="page" style="display:none;">
+                <div class="flex-between mb-16 flex-wrap gap-8">
+                    <h2 style="font-size:20px;">📈 <span data-i18n="financeTitle">Finance & Profit</span></h2>
+                </div>
+                <div class="stats-grid" id="financeStats"></div>
+                <div class="table-container mt-16">
+                    <div class="table-header"><h3 data-i18n="profitLossSummary">Profit & Loss Summary</h3></div>
+                    <div style="padding:20px;" id="financeSummary"></div>
+                </div>
+            </div>
+
+            <!-- Reports Page -->
+            <div id="page-reports" class="page" style="display:none;">
+                <div class="flex-between mb-16 flex-wrap gap-8">
+                    <h2 style="font-size:20px;">📑 <span data-i18n="reports">Reports</span></h2>
+                    <button class="btn btn-secondary" onclick="window.print()">🖨️ <span data-i18n="printReport">Print Report</span></button>
+                </div>
+                <div id="reportsContent"></div>
+            </div>
+
+            <!-- Users Page -->
+            <div id="page-users" class="page" style="display:none;">
+                <div class="flex-between mb-16 flex-wrap gap-8">
+                    <h2 style="font-size:20px;">👥 <span data-i18n="users">Users & Security</span></h2>
+                    <button class="btn btn-primary" onclick="openUserModal()">➕ <span data-i18n="addUser">Add User</span></button>
+                </div>
+                <div class="table-container">
+                    <div class="table-header"><h3 data-i18n="systemUsers">System Users</h3></div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead><tr><th data-i18n="name">Name</th><th data-i18n="username">Username</th><th data-i18n="role">Role</th><th data-i18n="permissions">Permissions</th><th data-i18n="actions">Actions</th></tr></thead>
+                            <tbody id="usersTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-container mt-16">
+                    <div class="table-header"><h3 data-i18n="activityLog">Activity Log</h3></div>
+                    <div style="overflow-x:auto;max-height:300px;overflow-y:auto;">
+                        <table>
+                            <thead><tr><th data-i18n="time">Time</th><th data-i18n="user">User</th><th data-i18n="action">Action</th></tr></thead>
+                            <tbody id="activityLogBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ TOAST CONTAINER ============ -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ============ MODAL OVERLAY ============ -->
+    <div class="modal-overlay" id="modalOverlay" style="display:none;" onclick="closeModalOnOverlay(event)">
+        <div class="modal" id="modalContent">
+            <!-- Dynamic content -->
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // TRANSLATION SYSTEM
+        // ============================================================
+        const translations = {
+            en: {
+                appTitle: "Business Management System",
+                username: "Username",
+                password: "Password",
+                signIn: "Sign In",
+                main: "Main",
+                dashboard: "Dashboard",
+                purchases: "Purchases",
+                inventory: "Inventory",
+                grading: "Grading & Sorting",
+                sales: "Sales",
+                credit: "Credit & Collections",
+                finance: "Finance",
+                expenses: "Expenses",
+                financeTitle: "Finance & Profit",
+                reports: "Reports",
+                system: "System",
+                users: "Users & Security",
+                newPurchase: "New Purchase",
+                newSale: "New Sale",
+                recordPayment: "Record Payment",
+                addExpense: "Add Expense",
+                recentActivity: "📋 Recent Activity",
+                viewAll: "View All",
+                date: "Date",
+                supplier: "Supplier",
+                netKg: "Net Kg",
+                pricePerKg: "Price/Kg",
+                total: "Total",
+                paid: "Paid",
+                balance: "Balance",
+                status: "Status",
+                actions: "Actions",
+                purchaseRecords: "Purchase Records",
+                transferStock: "Transfer Stock",
+                stockByWarehouse: "Stock by Warehouse",
+                warehouse: "Warehouse",
+                grade: "Grade",
+                sacks: "Sacks",
+                kg: "Kg",
+                trueCostKg: "True Cost/Kg",
+                totalValue: "Total Value",
+                newSortingBatch: "New Sorting Batch",
+                sortingRecords: "Sorting Records",
+                inputKg: "Input Kg",
+                grade1: "Grade 1",
+                grade2: "Grade 2",
+                reject: "Reject",
+                lossPercent: "Loss %",
+                labourCost: "Labour Cost",
+                salesRecords: "Sales Records",
+                customer: "Customer",
+                customerBalances: "Customer Balances & Aging",
+                totalCredit: "Total Credit",
+                aging: "Aging",
+                expenseRecords: "Expense Records",
+                category: "Category",
+                amount: "Amount (UGX)",
+                note: "Note",
+                profitLossSummary: "Profit & Loss Summary",
+                printReport: "Print Report",
+                systemUsers: "System Users",
+                name: "Name",
+                role: "Role",
+                permissions: "Permissions",
+                activityLog: "Activity Log",
+                time: "Time",
+                user: "User",
+                action: "Action",
+                addUser: "Add User",
+                lowStockAlert: "Low Stock Alert",
+                totalCustomers: "Total Customers",
+                cashToday: "Cash Today",
+                debtToday: "Debt Today",
+                profitToday: "Profit Today",
+                totalStock: "Total Stock",
+                noActivity: "No activity yet",
+                noPurchases: "No purchases found",
+                noStock: "No stock in inventory",
+                noSorting: "No sorting records yet",
+                noSales: "No sales yet",
+                noCustomers: "No customers",
+                noExpenses: "No expenses recorded",
+                noDebtors: "No debtors - all settled!",
+                noActivityLog: "No activity",
+                edit: "Edit",
+                delete: "Delete",
+                view: "View",
+                save: "Save",
+                cancel: "Cancel",
+                confirmDelete: "Delete this record?",
+                confirmDeletePurchase: "Delete this purchase?",
+                confirmDeleteSale: "Delete this sale?",
+                confirmDeleteExpense: "Delete this expense?",
+                confirmDeleteGrading: "Delete this sorting record?",
+                confirmDeleteUser: "Delete this user?",
+                permissionDenied: "You do not have permission to edit stock",
+                stockNotFound: "Stock item not found",
+                invalidTransfer: "Invalid transfer details",
+                notEnoughSacks: "Not enough sacks to transfer",
+                transferSuccess: "Stock transferred successfully!",
+                stockUpdated: "Stock updated successfully!",
+                purchaseSaved: "Purchase saved successfully!",
+                saleSaved: "Sale recorded successfully!",
+                expenseSaved: "Expense saved!",
+                paymentRecorded: "Payment recorded!",
+                sortingSaved: "Sorting saved!",
+                userAdded: "User added!",
+                userDeleted: "User deleted",
+                purchaseDeleted: "Purchase deleted",
+                saleDeleted: "Sale deleted and stock restored",
+                expenseDeleted: "Expense deleted",
+                gradingDeleted: "Sorting record deleted",
+                searchResults: "Found",
+                logout: "Logout",
+                loginWelcome: "Welcome",
+                loggedOut: "Logged out successfully",
+            },
+            lg: {
+                appTitle: "Enkola y'Obusuubuzi",
+                username: "Erinnya ly'omukozesa",
+                password: "Akasuumi",
+                signIn: "Yingira",
+                main: "Ebikulu",
+                dashboard: "Olubao",
+                purchases: "Okugula",
+                inventory: "Etterekero",
+                grading: "Okusengejja & Okulonda",
+                sales: "Okutunda",
+                credit: "Ebbanja n'Okukungula",
+                finance: "Eby'ensimbi",
+                expenses: "Eby'okukozesa",
+                financeTitle: "Eby'ensimbi n'Amagoba",
+                reports: "Lipoota",
+                system: "Enkola",
+                users: "Abakozesa n'Obukuumi",
+                newPurchase: "Okugula okupya",
+                newSale: "Okutunda okupya",
+                recordPayment: "Wandiika Ssente",
+                addExpense: "Yongera Ensaasaanya",
+                recentActivity: "📋 Ebikolwa ebiwedde",
+                viewAll: "Laba Byonna",
+                date: "Ennaku",
+                supplier: "Omutunzi",
+                netKg: "Kilo Ezisigadde",
+                pricePerKg: "Omutengo/Kg",
+                total: "Omugatte",
+                paid: "Asasudde",
+                balance: "Ebbanja",
+                status: "Embeera",
+                actions: "Ebikolwa",
+                purchaseRecords: "Ebikolwa by'Okugula",
+                transferStock: "Sindika Etterekero",
+                stockByWarehouse: "Etterekero okusinziira ku Kifo",
+                warehouse: "Ekifo ky'Etterekero",
+                grade: "Omutendera",
+                sacks: "Sakisi",
+                kg: "Kg",
+                trueCostKg: "Omutengo ogw'okufiirwa/Kg",
+                totalValue: "Omugatte gw'omuwendo",
+                newSortingBatch: "Ekibiina ekipya eky'Okusengejja",
+                sortingRecords: "Ebikolwa by'Okusengejja",
+                inputKg: "Kg ez'okuyingiza",
+                grade1: "Omutendera 1",
+                grade2: "Omutendera 2",
+                reject: "Ebyekulwa",
+                lossPercent: "% ey'okufiirwa",
+                labourCost: "Omutengo gw'emirimu",
+                salesRecords: "Ebikolwa by'Okutunda",
+                customer: "Omuguzi",
+                customerBalances: "Ebbanja z'Abaguzi n'Okuyimirira",
+                totalCredit: "Ebbanja yonna",
+                aging: "Ebbanja okusinziira ku biro",
+                expenseRecords: "Ebikolwa by'Ensaasaanya",
+                category: "Ekika",
+                amount: "Omuwendo (UGX)",
+                note: "Ebiwandiiko",
+                profitLossSummary: "Okugoba n'Okufiirwa",
+                printReport: "Kuba Lipoota",
+                systemUsers: "Abakozesa ba Sisitemu",
+                name: "Erinnya",
+                role: "Omulimu",
+                permissions: "Obuyinza",
+                activityLog: "Olukalala lw'ebikolwa",
+                time: "Obudde",
+                user: "Omukozesa",
+                action: "Ekikolwa",
+                addUser: "Yongera Omukozesa",
+                lowStockAlert: "Okwekubagira kw'Etterekero",
+                totalCustomers: "Omugatte gw'Abaguzi",
+                cashToday: "Ssente olwaleero",
+                debtToday: "Ebbanja olwaleero",
+                profitToday: "Amagoba olwaleero",
+                totalStock: "Etterekero lyonna",
+                noActivity: "Tewali bikolwa",
+                noPurchases: "Tewali bigula bibadde",
+                noStock: "Tewali tterekero",
+                noSorting: "Tewali nsengejja",
+                noSales: "Tewali tutunda",
+                noCustomers: "Tewali baguzi",
+                noExpenses: "Tewali nsaasaanya",
+                noDebtors: "Tewali babanja - byonna bisasuddwa!",
+                noActivityLog: "Tewali kikolwa",
+                edit: "Kyusa",
+                delete: "Gyawo",
+                view: "Laba",
+                save: "Tereka",
+                cancel: "Sazaamu",
+                confirmDelete: "Gyawo ekiwandiiko kino?",
+                confirmDeletePurchase: "Gyawo okugula kuno?",
+                confirmDeleteSale: "Gyawo okutunda kuno?",
+                confirmDeleteExpense: "Gyawo ensaasaanya eno?",
+                confirmDeleteGrading: "Gyawo ekikolwa kino eky'okusengejja?",
+                confirmDeleteUser: "Gyawo omukozesa ono?",
+                permissionDenied: "Tolina buyinza kukyusa tterekero",
+                stockNotFound: "Etterekero terisangiddwa",
+                invalidTransfer: "Ebikolwa by'okusindika si bituufu",
+                notEnoughSacks: "Sakisi tezimala",
+                transferSuccess: "Etterekero lisindikiddwa bulungi!",
+                stockUpdated: "Etterekero likyusiddwa bulungi!",
+                purchaseSaved: "Okugula kuterekeddwa bulungi!",
+                saleSaved: "Okutunda kuterekeddwa bulungi!",
+                expenseSaved: "Ensaasaanya etedde!",
+                paymentRecorded: "Ssente ziterekoddwa!",
+                sortingSaved: "Okusengejja kuterekoddwa!",
+                userAdded: "Omukozesa ayongedwa!",
+                userDeleted: "Omukozesa agyiddwa",
+                purchaseDeleted: "Okugula kugyiddwa",
+                saleDeleted: "Okutunda kugyiddwa era etterekero lizzeewo",
+                expenseDeleted: "Ensaasaanya egyiddwa",
+                gradingDeleted: "Ekikolwa eky'okusengejja kigyiddwa",
+                searchResults: "Bino byazudde",
+                logout: "Fuluma",
+                loginWelcome: "Tukwanirizza",
+                loggedOut: "Ofumyeemu bulungi",
+            }
+        };
+
+        let currentLang = 'en';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('bms_lang', lang);
+            document.getElementById('languageSelector').value = lang;
+            applyTranslations();
+            // Re-render current page to update dynamic content
+            const activePage = document.querySelector('.page[style*="display: block"]')?.id || 'page-dashboard';
+            const pageName = activePage.replace('page-', '');
+            renderPage(pageName);
+        }
+
+        function t(key) {
+            return translations[currentLang]?.[key] || translations.en[key] || key;
+        }
+
+        function applyTranslations() {
+            // Update elements with data-i18n attribute
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.textContent = t(key);
+            });
+            // Update page title if possible
+            const pageTitle = document.getElementById('pageTitle');
+            if (pageTitle) {
+                const activePage = document.querySelector('.nav-item.active')?.getAttribute('data-page');
+                if (activePage) {
+                    const titles = {
+                        dashboard: t('dashboard'),
+                        purchases: t('purchases'),
+                        inventory: t('inventory'),
+                        grading: t('grading'),
+                        sales: t('sales'),
+                        credit: t('credit'),
+                        expenses: t('expenses'),
+                        finance: t('financeTitle'),
+                        reports: t('reports'),
+                        users: t('users'),
+                    };
+                    pageTitle.textContent = titles[activePage] || t('dashboard');
+                }
+            }
+            // Update login labels (if visible)
+            document.querySelectorAll('.login-box [data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.textContent = t(key);
+            });
+            // Update any other static texts that may have been hardcoded
+            document.querySelectorAll('.quick-btn span[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.textContent = t(key);
+            });
+        }
+
+        // ============================================================
+        // DATA LAYER - localStorage based
+        // ============================================================
+        const DB_KEYS = {
+            suppliers: 'bms_suppliers',
+            purchases: 'bms_purchases',
+            inventory: 'bms_inventory',
+            customers: 'bms_customers',
+            sales: 'bms_sales',
+            payments: 'bms_payments',
+            expenses: 'bms_expenses',
+            grading: 'bms_grading',
+            users: 'bms_users',
+            activityLog: 'bms_activity',
+            settings: 'bms_settings',
+            transfers: 'bms_transfers',
+            currentUser: 'bms_currentUserId',
+        };
+
+        function getDB(key, fallback = []) {
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : fallback;
+            } catch { return fallback; }
+        }
+
+        function setDB(key, value) {
+            localStorage.setItem(key, JSON.stringify(value));
+        }
+
+        function generateId(prefix = 'id') {
+            return prefix + '_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        }
+
+        function getNextId(entity) {
+            const items = getDB(entity);
+            return items.length > 0 ? Math.max(...items.map(i => i._seq || 0)) + 1 : 1;
+        }
+
+        function logActivity(user, action) {
+            const logs = getDB(DB_KEYS.activityLog);
+            logs.unshift({
+                id: generateId('log'),
+                userId: user,
+                action: action,
+                timestamp: new Date().toISOString()
+            });
+            if (logs.length > 500) logs.length = 500;
+            setDB(DB_KEYS.activityLog, logs);
+        }
+
+        function getCurrentUser() {
+            const userId = localStorage.getItem(DB_KEYS.currentUser);
+            if (userId) {
+                const users = getDB(DB_KEYS.users);
+                return users.find(u => u.id === userId) || null;
+            }
+            return null;
+        }
+
+        // ============================================================
+        // LOGIN / LOGOUT
+        // ============================================================
+        function login() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const users = getDB(DB_KEYS.users);
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
+                localStorage.setItem(DB_KEYS.currentUser, user.id);
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('loginError').style.display = 'none';
+                updateUserInfo();
+                renderPage('dashboard');
+                showToast(`${t('loginWelcome')}, ${user.name}!`, 'success');
+                logActivity(user.name, 'Logged in');
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem(DB_KEYS.currentUser);
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginError').style.display = 'none';
+            showToast(t('loggedOut'), 'info');
+        }
+
+        function updateUserInfo() {
+            const currentUser = getCurrentUser();
+            if (currentUser) {
+                document.getElementById('currentUserName').textContent = currentUser.name;
+                document.getElementById('currentUserRole').textContent = currentUser.role;
+                document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+            }
+        }
+
+        // ============================================================
+        // INITIALIZATION
+        // ============================================================
+        function initializeDatabase() {
+            // Seed users if empty (with new admin password)
+            if (getDB(DB_KEYS.users).length === 0) {
+                const seedUsers = [
+                    { id: 'usr_admin', name: 'Admin', username: 'admin', password: '0756448405@bA', role: 'Admin',
+                        isLoggedIn: false, _seq: 1 },
+                    { id: 'usr_store', name: 'Store Keeper', username: 'store', password: 'store123',
+                        role: 'Storekeeper', isLoggedIn: false, _seq: 2 },
+                    { id: 'usr_cash', name: 'Cashier', username: 'cashier', password: 'cash123', role: 'Cashier',
+                        isLoggedIn: false, _seq: 3 },
+                    { id: 'usr_buyer', name: 'Buyer', username: 'buyer', password: 'buyer123', role: 'Buyer',
+                        isLoggedIn: false, _seq: 4 },
+                ];
+                setDB(DB_KEYS.users, seedUsers);
+            } else {
+                // Ensure admin password is updated if it still has old default
+                const users = getDB(DB_KEYS.users);
+                const admin = users.find(u => u.username === 'admin');
+                if (admin && admin.password !== '0756448405@bA') {
+                    admin.password = '0756448405@bA';
+                    setDB(DB_KEYS.users, users);
+                }
+            }
+
+            // Seed customers if empty
+            if (getDB(DB_KEYS.customers).length === 0) {
+                const seedCustomers = [
+                    { id: 'cust_1', name: 'John Okello', shop: 'Okello Stores', phone: '0772123456',
+                        priceGroup: 'VIP', creditLimit: 2000000, balance: 0, _seq: 1 },
+                    { id: 'cust_2', name: 'Mary Auma', shop: 'Auma Retail', phone: '0788123456',
+                        priceGroup: 'Normal', creditLimit: 500000, balance: 0, _seq: 2 },
+                    { id: 'cust_3', name: 'David Ochen', shop: 'Ochen Roasters', phone: '0700123456',
+                        priceGroup: 'VIP', creditLimit: 3000000, balance: 0, _seq: 3 },
+                ];
+                setDB(DB_KEYS.customers, seedCustomers);
+            }
+
+            // Seed suppliers if empty
+            if (getDB(DB_KEYS.suppliers).length === 0) {
+                const seedSuppliers = [
+                    { id: 'sup_1', name: 'Peter Odongo', phone: '0771123456', district: 'Lira', village: 'Ogur',
+                        _seq: 1 },
+                    { id: 'sup_2', name: 'Sarah Achen', phone: '0782123456', district: 'Soroti', village: 'Arapai',
+                        _seq: 2 },
+                    { id: 'sup_3', name: 'James Okot', phone: '0702123456', district: 'Gulu', village: 'Layibi',
+                        _seq: 3 },
+                ];
+                setDB(DB_KEYS.suppliers, seedSuppliers);
+            }
+
+            // Seed settings
+            if (!getDB(DB_KEYS.settings, null)) {
+                setDB(DB_KEYS.settings, {
+                    buyingPricePerKg: 3500,
+                    transportPerSack: 15000,
+                    offloadingPerSack: 5000,
+                    sortingLabourPerSack: 8000,
+                    shelledConversionRate: 0.65,
+                    lowStockThresholdKg: 500,
+                    defaultWarehouse: 'Kisenyi Store 1',
+                });
+            }
+
+            // Seed inventory if empty
+            if (getDB(DB_KEYS.inventory).length === 0) {
+                const seedInventory = [
+                    { id: 'inv_1', grade: 'Grade 1', warehouse: 'Kisenyi Store 1', sacks: 45, kgs: 4500,
+                        trueCostPerKg: 3200, _seq: 1 },
+                    { id: 'inv_2', grade: 'Grade 2', warehouse: 'Kisenyi Store 1', sacks: 22, kgs: 2200,
+                        trueCostPerKg: 2800, _seq: 2 },
+                    { id: 'inv_3', grade: 'Grade 1', warehouse: 'Kisenyi Store 2', sacks: 30, kgs: 3000,
+                        trueCostPerKg: 3150, _seq: 3 },
+                    { id: 'inv_4', grade: 'Grade 2', warehouse: 'Nakawa', sacks: 15, kgs: 1500, trueCostPerKg: 2750,
+                        _seq: 4 },
+                ];
+                setDB(DB_KEYS.inventory, seedInventory);
+            }
+        }
+
+        // ============================================================
+        // NAVIGATION
+        // ============================================================
+        function navigateTo(page) {
+            if (!getCurrentUser()) return;
+            // Update sidebar
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
+            if (navItem) navItem.classList.add('active');
+
+            // Update pages
+            document.querySelectorAll('.page').forEach(el => el.style.display = 'none');
+            const pageEl = document.getElementById(`page-${page}`);
+            if (pageEl) pageEl.style.display = 'block';
+
+            // Update title
+            const titles = {
+                dashboard: t('dashboard'),
+                purchases: t('purchases'),
+                inventory: t('inventory'),
+                grading: t('grading'),
+                sales: t('sales'),
+                credit: t('credit'),
+                expenses: t('expenses'),
+                finance: t('financeTitle'),
+                reports: t('reports'),
+                users: t('users'),
+            };
+            document.getElementById('pageTitle').textContent = titles[page] || t('dashboard');
+
+            // Close sidebar on mobile
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('open');
+            }
+
+            // Render page
+            renderPage(page);
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function renderPage(page) {
+            const renderers = {
+                dashboard: renderDashboard,
+                purchases: renderPurchases,
+                inventory: renderInventory,
+                grading: renderGrading,
+                sales: renderSales,
+                credit: renderCredit,
+                expenses: renderExpenses,
+                finance: renderFinance,
+                reports: renderReports,
+                users: renderUsers,
+            };
+            if (renderers[page]) renderers[page]();
+        }
+
+        // ============================================================
+        // DASHBOARD
+        // ============================================================
+        function renderDashboard() {
+            const purchases = getDB(DB_KEYS.purchases);
+            const sales = getDB(DB_KEYS.sales);
+            const expenses = getDB(DB_KEYS.expenses);
+            const inventory = getDB(DB_KEYS.inventory);
+            const payments = getDB(DB_KEYS.payments);
+            const customers = getDB(DB_KEYS.customers);
+
+            const totalStockKg = inventory.reduce((s, i) => s + (i.kgs || 0), 0);
+            const totalStockSacks = inventory.reduce((s, i) => s + (i.sacks || 0), 0);
+            const cashToday = payments.filter(p => p.date === todayStr()).reduce((s, p) => s + p.amount, 0);
+            const debtToday = sales.filter(s => s.date === todayStr() && s.balance > 0).reduce((s, s2) => s + s2
+                .balance, 0);
+            const totalRevenueToday = sales.filter(s => s.date === todayStr()).reduce((s, s2) => s + s2.total, 0);
+            const totalExpensesToday = expenses.filter(e => e.date === todayStr()).reduce((s, e) => s + e.amount, 0);
+            const profitToday = totalRevenueToday - totalExpensesToday;
+
+            const lowStockItems = inventory.filter(i => i.kgs < getDB(DB_KEYS.settings, { lowStockThresholdKg: 500 })
+                .lowStockThresholdKg);
+            const totalCredit = customers.reduce((s, c) => s + (c.balance || 0), 0);
+            const overdueCustomers = customers.filter(c => c.balance > 0);
+
+            const statsHTML = `
+                <div class="stat-card accent">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-label">${t('totalStock')}</div>
+                    <div class="stat-value">${totalStockKg.toLocaleString()} kg</div>
+                    <div class="stat-sub">${totalStockSacks} ${t('sacks').toLowerCase()}</div>
+                </div>
+                <div class="stat-card ${cashToday > 0 ? 'success' : ''}">
+                    <div class="stat-icon">💵</div>
+                    <div class="stat-label">${t('cashToday')}</div>
+                    <div class="stat-value">UGX ${cashToday.toLocaleString()}</div>
+                    <div class="stat-sub">${todayStr()}</div>
+                </div>
+                <div class="stat-card ${debtToday > 0 ? 'warning' : ''}">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-label">${t('debtToday')}</div>
+                    <div class="stat-value">UGX ${debtToday.toLocaleString()}</div>
+                    <div class="stat-sub">${overdueCustomers.length} ${t('totalCustomers').toLowerCase()}</div>
+                </div>
+                <div class="stat-card ${profitToday >= 0 ? 'success' : 'danger'}">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-label">${t('profitToday')}</div>
+                    <div class="stat-value">UGX ${profitToday.toLocaleString()}</div>
+                    <div class="stat-sub">Revenue: UGX ${totalRevenueToday.toLocaleString()}</div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-label">${t('lowStockAlert')}</div>
+                    <div class="stat-value">${lowStockItems.length}</div>
+                    <div class="stat-sub">items below threshold</div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-label">${t('totalCustomers')}</div>
+                    <div class="stat-value">${customers.length}</div>
+                    <div class="stat-sub">Total credit: UGX ${totalCredit.toLocaleString()}</div>
+                </div>
+            `;
+            document.getElementById('dashboardStats').innerHTML = statsHTML;
+
+            // Recent activity
+            const activity = getDB(DB_KEYS.activityLog).slice(0, 10);
+            const activityHTML = activity.length > 0 ? `
+                <table>
+                    <thead><tr><th>${t('time')}</th><th>${t('user')}</th><th>${t('action')}</th></tr></thead>
+                    <tbody>
+                        ${activity.map(a => `<tr><td>${new Date(a.timestamp).toLocaleString()}</td><td>${a.userId}</td><td>${a.action}</td></tr>`).join('')}
+                    </tbody>
+                </table>
+            ` : `<div class="empty-state"><div class="empty-icon">📋</div><p>${t('noActivity')}</p></div>`;
+            document.getElementById('recentActivity').innerHTML = activityHTML;
+
+            // Credit badge
+            const overdueBadge = document.getElementById('creditBadge');
+            if (overdueCustomers.length > 0) {
+                overdueBadge.style.display = 'inline';
+                overdueBadge.textContent = overdueCustomers.length;
+            } else {
+                overdueBadge.style.display = 'none';
+            }
+        }
+
+        function todayStr() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        // ============================================================
+        // PURCHASES
+        // ============================================================
+        function renderPurchases() {
+            const purchases = getDB(DB_KEYS.purchases);
+            const suppliers = getDB(DB_KEYS.suppliers);
+            const filterDate = document.getElementById('purchaseFilterDate')?.value;
+
+            let filtered = purchases;
+            if (filterDate) {
+                filtered = purchases.filter(p => p.date === filterDate);
+            }
+
+            const tbody = document.getElementById('purchasesTableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML =
+                    `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:30px;">${t('noPurchases')}</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(p => {
+                const supplier = suppliers.find(s => s.id === p.supplierId);
+                const statusBadge = p.paymentStatus === 'Full' ? '<span class="badge-status badge-paid">Paid Full</span>' :
+                    p.paymentStatus === 'Advance' ?
+                    '<span class="badge-status badge-advance">Advance</span>' :
+                    '<span class="badge-status badge-credit">Credit</span>';
+                return `<tr>
+                    <td>${p.date}</td>
+                    <td>${supplier?.name || 'Unknown'}</td>
+                    <td>${p.finalKg?.toLocaleString() || 0}</td>
+                    <td>UGX ${(p.pricePerKg || 0).toLocaleString()}</td>
+                    <td>UGX ${(p.totalPayable || 0).toLocaleString()}</td>
+                    <td>UGX ${(p.amountPaid || 0).toLocaleString()}</td>
+                    <td>UGX ${(p.balance || 0).toLocaleString()}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline" onclick="viewPurchase('${p.id}')">👁️ ${t('view')}</button>
+                        <button class="btn btn-sm btn-outline" onclick="deletePurchase('${p.id}')">🗑️ ${t('delete')}</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function openPurchaseModal() {
+            const suppliers = getDB(DB_KEYS.suppliers);
+            const settings = getDB(DB_KEYS.settings);
+            const modalHTML = `
+                <div class="modal-header">
+                    <h3>➕ ${t('newPurchase')}</h3>
+                    <button class="modal-close" onclick="closeModal()">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>${t('supplier')} *</label>
+                            <select id="p_supplier">
+                                <option value="">${t('selectSupplier') || 'Select Supplier...'}</option>
+                                ${suppliers.map(s => `<option value="${s.id}">${s.name} (${s.district})</option>`).join('')}
+                                <option value="__new">+ ${t('addNewSupplier') || 'Add New Supplier'}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>${t('date')} *</label>
+                            <input type="date" id="p_date" value="${todayStr()}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('truckNo') || 'Truck No'}</label><input type="text" id="p_truck" placeholder="e.g. UBA 123A"></div>
+                        <div class="form-group">
+                            <label>${t('sackType') || 'Sack Type'} *</label>
+                            <select id="p_sackType"><option value="100kg">100kg Sack</option><option value="50kg">50kg Sack</option><option value="debe">Debe</option></select>
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group"><label>${t('grossWeight') || 'Gross Weight (kg)'} *</label><input type="number" id="p_gross" min="0" step="0.1" oninput="calcPurchaseNet()"></div>
+                        <div class="form-group"><label>${t('tareWeight') || 'Tare / Sack Weight (kg)'}</label><input type="number" id="p_tare" min="0" step="0.1" value="1.5" oninput="calcPurchaseNet()"></div>
+                        <div class="form-group"><label>${t('netWeight') || 'Net Weight (kg)'}</label><input type="number" id="p_net" readonly></div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group"><label>${t('moisture') || 'Moisture %'}</label><input type="number" id="p_moisture" min="0" max="30" step="0.1" value="3" oninput="calcPurchaseNet()"></div>
+                        <div class="form-group"><label>${t('stones') || 'Stones (kg)'}</label><input type="number" id="p_stones" min="0" step="0.1" value="0" oninput="calcPurchaseNet()"></div>
+                        <div class="form-group"><label>${t('badNuts') || 'Bad Nuts (kg)'}</label><input type="number" id="p_badNuts" min="0" step="0.1" value="0" oninput="calcPurchaseNet()"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('finalKg') || 'Final Payable Kg'}</label><input type="number" id="p_finalKg" readonly></div>
+                        <div class="form-group"><label>${t('buyingPrice') || 'Buying Price / Kg (UGX)'} *</label><input type="number" id="p_price" min="0" value="${settings?.buyingPricePerKg || 3500}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('transport') || 'Transport Cost (UGX)'}</label><input type="number" id="p_transport" min="0" value="${settings?.transportPerSack || 0}"></div>
+                        <div class="form-group"><label>${t('offloading') || 'Offloading Cost (UGX)'}</label><input type="number" id="p_offloading" min="0" value="${settings?.offloadingPerSack || 0}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('total')} (UGX)</label><input type="number" id="p_total" readonly></div>
+                        <div class="form-group">
+                            <label>${t('payment') || 'Payment'} *</label>
+                            <select id="p_paymentStatus"><option value="Full">${t('full') || 'Full'}</option><option value="Advance">${t('advance') || 'Advance'}</option><option value="Credit">${t('credit') || 'Credit'}</option></select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('amountPaid') || 'Amount Paid (UGX)'}</label><input type="number" id="p_amountPaid" min="0" value="0" oninput="calcPurchaseBalance()"></div>
+                        <div class="form-group"><label>${t('balance')} (UGX)</label><input type="number" id="p_balance" readonly></div>
+                    </div>
+                    <div class="form-group">
+                        <label>${t('warehouse')}</label>
+                        <select id="p_warehouse"><option>Kisenyi Store 1</option><option>Kisenyi Store 2</option><option>Nakawa</option></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+                    <button class="btn btn-primary" onclick="savePurchase()">${t('save')}</button>
+                </div>
+            `;
+            document.getElementById('modalContent').innerHTML = modalHTML;
+            document.getElementById('modalOverlay').style.display = 'flex';
+            calcPurchaseNet();
+            calcPurchaseBalance();
+        }
+
+        function calcPurchaseNet() {
+            const gross = parseFloat(document.getElementById('p_gross')?.value) || 0;
+            const tare = parseFloat(document.getElementById('p_tare')?.value) || 0;
+            const moisture = parseFloat(document.getElementById('p_moisture')?.value) || 0;
+            const stones = parseFloat(document.getElementById('p_stones')?.value) || 0;
+            const badNuts = parseFloat(document.getElementById('p_badNuts')?.value) || 0;
+
+            const net = gross - tare;
+            const moistureDeduction = net * (moisture / 100);
+            const finalKg = Math.max(0, net - moistureDeduction - stones - badNuts);
+
+            if (document.getElementById('p_net')) document.getElementById('p_net').value = net.toFixed(1);
+            if (document.getElementById('p_finalKg')) document.getElementById('p_finalKg').value = finalKg.toFixed(1);
+
+            const price = parseFloat(document.getElementById('p_price')?.value) || 0;
+            const transport = parseFloat(document.getElementById('p_transport')?.value) || 0;
+            const offloading = parseFloat(document.getElementById('p_offloading')?.value) || 0;
+            const total = finalKg * price + transport + offloading;
+            if (document.getElementById('p_total')) document.getElementById('p_total').value = total.toFixed(0);
+            calcPurchaseBalance();
+        }
+
+        function calcPurchaseBalance() {
+            const total = parseFloat(document.getElementById('p_total')?.value) || 0;
+            const paid = parseFloat(document.getElementById('p_amountPaid')?.value) || 0;
+            if (document.getElementById('p_balance')) document.getElementById('p_balance').value = Math.max(0, total - paid)
+                .toFixed(0);
+        }
+
+        function savePurchase() {
+            const supplierId = document.getElementById('p_supplier')?.value;
+            if (!supplierId) { showToast(t('selectSupplier'), 'error'); return; }
+            if (supplierId === '__new') {
+                const name = prompt(t('enterSupplierName'));
+                if (!name) return;
+                const suppliers = getDB(DB_KEYS.suppliers);
+                const newSup = { id: generateId('sup'), name, phone: '', district: 'Lira', village: '', _seq: getNextId(
+                        DB_KEYS.suppliers) };
+                suppliers.push(newSup);
+                setDB(DB_KEYS.suppliers, suppliers);
+                openPurchaseModal();
+                document.getElementById('p_supplier').value = newSup.id;
+                return;
+            }
+
+            const purchase = {
+                id: generateId('pur'),
+                supplierId,
+                date: document.getElementById('p_date')?.value || todayStr(),
+                truckNo: document.getElementById('p_truck')?.value || '',
+                sackType: document.getElementById('p_sackType')?.value || '100kg',
+                grossWeight: parseFloat(document.getElementById('p_gross')?.value) || 0,
+                tareWeight: parseFloat(document.getElementById('p_tare')?.value) || 0,
+                netWeight: parseFloat(document.getElementById('p_net')?.value) || 0,
+                moisturePct: parseFloat(document.getElementById('p_moisture')?.value) || 0,
+                stonesKg: parseFloat(document.getElementById('p_stones')?.value) || 0,
+                badNutsKg: parseFloat(document.getElementById('p_badNuts')?.value) || 0,
+                finalKg: parseFloat(document.getElementById('p_finalKg')?.value) || 0,
+                pricePerKg: parseFloat(document.getElementById('p_price')?.value) || 0,
+                transportCost: parseFloat(document.getElementById('p_transport')?.value) || 0,
+                offloadingCost: parseFloat(document.getElementById('p_offloading')?.value) || 0,
+                totalPayable: parseFloat(document.getElementById('p_total')?.value) || 0,
+                paymentStatus: document.getElementById('p_paymentStatus')?.value || 'Full',
+                amountPaid: parseFloat(document.getElementById('p_amountPaid')?.value) || 0,
+                balance: parseFloat(document.getElementById('p_balance')?.value) || 0,
+                warehouse: document.getElementById('p_warehouse')?.value || 'Kisenyi Store 1',
+                _seq: getNextId(DB_KEYS.purchases),
+            };
+
+            const purchases = getDB(DB_KEYS.purchases);
+            purchases.unshift(purchase);
+            setDB(DB_KEYS.purchases, purchases);
+
+            // Add to inventory
+            const inventory = getDB(DB_KEYS.inventory);
+            const invItem = {
+                id: generateId('inv'),
+                grade: 'Unsorted',
+                warehouse: purchase.warehouse,
+                sacks: Math.ceil(purchase.finalKg / 100),
+                kgs: purchase.finalKg,
+                trueCostPerKg: purchase.totalPayable / purchase.finalKg || 0,
+                source: 'Purchase',
+                sourceId: purchase.id,
+                _seq: getNextId(DB_KEYS.inventory),
+            };
+            inventory.push(invItem);
+            setDB(DB_KEYS.inventory, inventory);
+
+            // If credit, update supplier balance
+            if (purchase.paymentStatus !== 'Full' && purchase.balance > 0) {
+                const suppliers = getDB(DB_KEYS.suppliers);
+                const sup = suppliers.find(s => s.id === supplierId);
+                if (sup) {
+                    sup.balance = (sup.balance || 0) + purchase.balance;
+                    setDB(DB_KEYS.suppliers, suppliers);
+                }
+            }
+
+            const currentUser = getCurrentUser();
+            logActivity(currentUser?.name || 'System', `Recorded purchase from ${document.getElementById('p_supplier').selectedOptions[0]?.text || 'supplier'} - ${purchase.finalKg}kg for UGX ${purchase.totalPayable.toLocaleString()}`);
+            closeModal();
+            showToast(t('purchaseSaved'), 'success');
+            renderPurchases();
+            renderDashboard();
+        }
+
+        function viewPurchase(id) {
+            const purchases = getDB(DB_KEYS.purchases);
+            const p = purchases.find(x => x.id === id);
+            if (!p) return;
+            const suppliers = getDB(DB_KEYS.suppliers);
+            const sup = suppliers.find(s => s.id === p.supplierId);
+            alert(`Purchase Details:\n\nSupplier: ${sup?.name || 'Unknown'}\nDate: ${p.date}\nFinal Kg: ${p.finalKg}\nTotal: UGX ${p.totalPayable}\nPaid: UGX ${p.amountPaid}\nBalance: UGX ${p.balance}\nStatus: ${p.paymentStatus}\nWarehouse: ${p.warehouse}`);
+        }
+
+        function deletePurchase(id) {
+            if (!confirm(t('confirmDeletePurchase'))) return;
+            let purchases = getDB(DB_KEYS.purchases);
+            purchases = purchases.filter(p => p.id !== id);
+            setDB(DB_KEYS.purchases, purchases);
+            let inventory = getDB(DB_KEYS.inventory);
+            inventory = inventory.filter(i => i.sourceId !== id);
+            setDB(DB_KEYS.inventory, inventory);
+            showToast(t('purchaseDeleted'), 'success');
+            renderPurchases();
+            renderDashboard();
+        }
+
+        // ============================================================
+        // INVENTORY
+        // ============================================================
+        function renderInventory() {
+            const inventory = getDB(DB_KEYS.inventory);
+            const warehouses = ['Kisenyi Store 1', 'Kisenyi Store 2', 'Nakawa'];
+
+            const statsHTML = warehouses.map(w => {
+                const items = inventory.filter(i => i.warehouse === w);
+                const totalKg = items.reduce((s, i) => s + i.kgs, 0);
+                const totalSacks = items.reduce((s, i) => s + i.sacks, 0);
+                const totalValue = items.reduce((s, i) => s + (i.kgs * i.trueCostPerKg), 0);
+                return `<div class="stat-card info">
+                    <div class="stat-icon">🏭</div>
+                    <div class="stat-label">${w}</div>
+                    <div class="stat-value">${totalKg.toLocaleString()} kg</div>
+                    <div class="stat-sub">${totalSacks} ${t('sacks').toLowerCase()} | UGX ${totalValue.toLocaleString()}</div>
+                </div>`;
+            }).join('');
+            document.getElementById('inventoryStats').innerHTML = statsHTML;
+
+            const tbody = document.getElementById('inventoryTableBody');
+            if (inventory.length === 0) {
+                tbody.innerHTML =
+                    `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px;">${t('noStock')}</td></tr>`;
+                return;
+            }
+
+            // Determine if current user can edit (Admin or Cashier)
+            const currentUser = getCurrentUser();
+            const canEdit = currentUser && (currentUser.role === 'Admin' || currentUser.role === 'Cashier');
+
+            tbody.innerHTML = inventory.map(i => `
+                <tr>
+                    <td>${i.warehouse}</td>
+                    <td>${i.grade}</td>
+                    <td>${i.sacks}</td>
+                    <td>${i.kgs?.toLocaleString()}</td>
+                    <td>UGX ${(i.trueCostPerKg || 0).toLocaleString()}</td>
+                    <td>UGX ${((i.kgs || 0) * (i.trueCostPerKg || 0)).toLocaleString()}</td>
+                    <td>
+                        ${canEdit ? `<button class="btn btn-sm btn-primary" onclick="openEditStockModal('${i.id}')">✏️ ${t('edit')}</button>` : '<span class="text-muted">No permission</span>'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openEditStockModal(id) {
+            const currentUser = getCurrentUser();
+            if (!currentUser || (currentUser.role !== 'Admin' && currentUser.role !== 'Cashier')) {
+                showToast(t('permissionDenied'), 'error');
+                return;
+            }
+            const inventory = getDB(DB_KEYS.inventory);
+            const item = inventory.find(i => i.id === id);
+            if (!item) { showToast(t('stockNotFound'), 'error'); return; }
+
+            const warehouses = ['Kisenyi Store 1', 'Kisenyi Store 2', 'Nakawa'];
+            const grades = ['Grade 1', 'Grade 2', 'Unsorted', 'Reject'];
+
+            const modalHTML = `
+                <div class="modal-header"><h3>✏️ ${t('edit')}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('warehouse')}</label>
+                            <select id="edit_warehouse">${warehouses.map(w => `<option ${w === item.warehouse ? 'selected' : ''}>${w}</option>`).join('')}</select>
+                        </div>
+                        <div class="form-group"><label>${t('grade')}</label>
+                            <select id="edit_grade">${grades.map(g => `<option ${g === item.grade ? 'selected' : ''}>${g}</option>`).join('')}</select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('sacks')}</label>
+                            <input type="number" id="edit_sacks" min="0" step="1" value="${item.sacks}" oninput="updateKgsFromSacks()">
+                        </div>
+                        <div class="form-group"><label>${t('kg')}</label>
+                            <input type="number" id="edit_kgs" min="0" step="0.1" value="${item.kgs}" oninput="updateSacksFromKgs()">
+                        </div>
+                    </div>
+                    <div class="form-group"><label>${t('trueCostKg')}</label>
+                        <input type="number" id="edit_trueCost" min="0" step="0.01" value="${item.trueCostPerKg || 0}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+                    <button class="btn btn-primary" onclick="saveStockEdit('${id}')">${t('save')}</button>
+                </div>
+            `;
+            document.getElementById('modalContent').innerHTML = modalHTML;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function updateKgsFromSacks() {
+            const sacks = parseFloat(document.getElementById('edit_sacks')?.value) || 0;
+            const kgs = sacks * 100;
+            document.getElementById('edit_kgs').value = kgs;
+        }
+
+        function updateSacksFromKgs() {
+            const kgs = parseFloat(document.getElementById('edit_kgs')?.value) || 0;
+            const sacks = Math.ceil(kgs / 100);
+            document.getElementById('edit_sacks').value = sacks;
+        }
+
+        function saveStockEdit(id) {
+            const currentUser = getCurrentUser();
+            if (!currentUser || (currentUser.role !== 'Admin' && currentUser.role !== 'Cashier')) {
+                showToast(t('permissionDenied'), 'error');
+                return;
+            }
+            const inventory = getDB(DB_KEYS.inventory);
+            const item = inventory.find(i => i.id === id);
+            if (!item) { showToast(t('stockNotFound'), 'error'); return; }
+
+            const warehouse = document.getElementById('edit_warehouse')?.value;
+            const grade = document.getElementById('edit_grade')?.value;
+            const sacks = parseFloat(document.getElementById('edit_sacks')?.value) || 0;
+            const kgs = parseFloat(document.getElementById('edit_kgs')?.value) || 0;
+            const trueCostPerKg = parseFloat(document.getElementById('edit_trueCost')?.value) || 0;
+
+            if (kgs < 0 || sacks < 0) { showToast(t('invalidValue'), 'error'); return; }
+
+            item.warehouse = warehouse;
+            item.grade = grade;
+            item.sacks = sacks;
+            item.kgs = kgs;
+            item.trueCostPerKg = trueCostPerKg;
+
+            setDB(DB_KEYS.inventory, inventory);
+            logActivity(currentUser.name, `Edited stock item ${grade} in ${warehouse}: ${sacks} sacks, ${kgs}kg`);
+            closeModal();
+            showToast(t('stockUpdated'), 'success');
+            renderInventory();
+            renderDashboard();
+        }
+
+        function openTransferModal() {
+            const inventory = getDB(DB_KEYS.inventory);
+            const modalHTML = `
+                <div class="modal-header"><h3>📦 ${t('transferStock')}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+                <div class="modal-body">
+                    <div class="form-group"><label>${t('stockItem') || 'Stock Item'}</label>
+                        <select id="t_item">${inventory.map(i => `<option value="${i.id}">${i.grade} - ${i.warehouse} (${i.kgs} kg)</option>`).join('')}</select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('sacks')}</label><input type="number" id="t_sacks" min="1" value="1"></div>
+                        <div class="form-group"><label>${t('toWarehouse') || 'To Warehouse'}</label><select id="t_to"><option>Kisenyi Store 1</option><option>Kisenyi Store 2</option><option>Nakawa</option></select></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+                    <button class="btn btn-primary" onclick="saveTransfer()">${t('save')}</button>
+                </div>
+            `;
+            document.getElementById('modalContent').innerHTML = modalHTML;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function saveTransfer() {
+            const itemId = document.getElementById('t_item')?.value;
+            const sacks = parseInt(document.getElementById('t_sacks')?.value) || 0;
+            const toWarehouse = document.getElementById('t_to')?.value;
+            if (!itemId || sacks <= 0) { showToast(t('invalidTransfer'), 'error'); return; }
+
+            const inventory = getDB(DB_KEYS.inventory);
+            const item = inventory.find(i => i.id === itemId);
+            if (!item || item.sacks < sacks) { showToast(t('notEnoughSacks'), 'error'); return; }
+
+            item.sacks -= sacks;
+            const kgsToTransfer = sacks * 100;
+            item.kgs -= kgsToTransfer;
+
+            const newItem = {
+                ...item,
+                id: generateId('inv'),
+                warehouse: toWarehouse,
+                sacks: sacks,
+                kgs: kgsToTransfer,
+                _seq: getNextId(DB_KEYS.inventory),
+            };
+            inventory.push(newItem);
+            setDB(DB_KEYS.inventory, inventory);
+
+            const transfers = getDB(DB_KEYS.transfers);
+            transfers.unshift({ id: generateId('tr'), fromItem: itemId, toWarehouse, sacks, kgs: kgsToTransfer,
+                date: todayStr(), _seq: getNextId(DB_KEYS.transfers) });
+            setDB(DB_KEYS.transfers, transfers);
+
+            const currentUser = getCurrentUser();
+            logActivity(currentUser?.name || 'System', `Transferred ${sacks} sacks to ${toWarehouse}`);
+            closeModal();
+            showToast(t('transferSuccess'), 'success');
+            renderInventory();
+        }
+
+        // ============================================================
+        // GRADING & SORTING
+        // ============================================================
+        function renderGrading() {
+            const grading = getDB(DB_KEYS.grading);
+            const tbody = document.getElementById('gradingTableBody');
+            if (grading.length === 0) {
+                tbody.innerHTML =
+                    `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:30px;">${t('noSorting')}</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = grading.map(g => {
+                const lossPct = g.inputKg > 0 ? ((g.inputKg - g.grade1Kg - g.grade2Kg - g.rejectKg) / g
+                    .inputKg * 100).toFixed(1) : 0;
+                return `<tr>
+                    <td>${g.date}</td>
+                    <td>${g.inputKg?.toLocaleString()}</td>
+                    <td>${g.grade1Kg?.toLocaleString()}</td>
+                    <td>${g.grade2Kg?.toLocaleString()}</td>
+                    <td>${g.rejectKg?.toLocaleString()}</td>
+                    <td>${lossPct}%</td>
+                    <td>UGX ${(g.labourCost || 0).toLocaleString()}</td>
+                    <td><button class="btn btn-sm btn-outline" onclick="deleteGrading('${g.id}')">🗑️ ${t('delete')}</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function openGradingModal() {
+            const inventory = getDB(DB_KEYS.inventory);
+            const unsorted = inventory.filter(i => i.grade === 'Unsorted');
+            const modalHTML = `
+                <div class="modal-header"><h3>🔬 ${t('newSortingBatch')}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+                <div class="modal-body">
+                    <div class="form-group"><label>${t('inputStock') || 'Input Stock (Unsorted)'}</label>
+                        <select id="g_input">${unsorted.length > 0 ? unsorted.map(i => `<option value="${i.id}">${i.warehouse} - ${i.kgs} kg</option>`).join('') : `<option value="">${t('noUnsorted') || 'No unsorted stock'}</option>`}</select>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group"><label>${t('grade1')} (kg)</label><input type="number" id="g_g1" min="0" value="0"></div>
+                        <div class="form-group"><label>${t('grade2')} (kg)</label><input type="number" id="g_g2" min="0" value="0"></div>
+                        <div class="form-group"><label>${t('reject')} (kg)</label><input type="number" id="g_reject" min="0" value="0"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('labourCost')} (UGX)</label><input type="number" id="g_labour" min="0" value="8000"></div>
+                        <div class="form-group"><label>${t('date')}</label><input type="date" id="g_date" value="${todayStr()}"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+                    <button class="btn btn-primary" onclick="saveGrading()">${t('save')}</button>
+                </div>
+            `;
+            document.getElementById('modalContent').innerHTML = modalHTML;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function saveGrading() {
+            const inputId = document.getElementById('g_input')?.value;
+            const g1 = parseFloat(document.getElementById('g_g1')?.value) || 0;
+            const g2 = parseFloat(document.getElementById('g_g2')?.value) || 0;
+            const reject = parseFloat(document.getElementById('g_reject')?.value) || 0;
+            const labour = parseFloat(document.getElementById('g_labour')?.value) || 0;
+            const date = document.getElementById('g_date')?.value || todayStr();
+
+            if (!inputId) { showToast(t('noUnsorted'), 'error'); return; }
+
+            const inventory = getDB(DB_KEYS.inventory);
+            const inputItem = inventory.find(i => i.id === inputId);
+            if (!inputItem) { showToast(t('stockNotFound'), 'error'); return; }
+
+            const inputKg = inputItem.kgs;
+            const totalOutput = g1 + g2 + reject;
+            if (totalOutput > inputKg) { showToast(t('outputExceedsInput'), 'error'); return; }
+
+            // Remove input item
+            inventory.splice(inventory.indexOf(inputItem), 1);
+
+            // Add Grade 1
+            if (g1 > 0) {
+                inventory.push({ id: generateId('inv'), grade: 'Grade 1', warehouse: inputItem.warehouse,
+                    sacks: Math.ceil(g1 / 100), kgs: g1, trueCostPerKg: inputItem.trueCostPerKg + (labour /
+                        inputKg), source: 'Sorting', sourceId: inputId, _seq: getNextId(DB_KEYS
+                        .inventory) });
+            }
+            // Add Grade 2
+            if (g2 > 0) {
+                inventory.push({ id: generateId('inv'), grade: 'Grade 2', warehouse: inputItem.warehouse,
+                    sacks: Math.ceil(g2 / 100), kgs: g2, trueCostPerKg: inputItem.trueCostPerKg + (labour /
+                        inputKg), source: 'Sorting', sourceId: inputId, _seq: getNextId(DB_KEYS
+                        .inventory) });
+            }
+            // Add Reject
+            if (reject > 0) {
+                inventory.push({ id: generateId('inv'), grade: 'Reject', warehouse: inputItem.warehouse,
+                    sacks: Math.ceil(reject / 100), kgs: reject, trueCostPerKg: 0, source: 'Sorting',
+                    sourceId: inputId, _seq: getNextId(DB_KEYS.inventory) });
+            }
+            setDB(DB_KEYS.inventory, inventory);
+
+            const grading = getDB(DB_KEYS.grading);
+            grading.unshift({ id: generateId('gr'), inputKg, grade1Kg: g1, grade2Kg: g2, rejectKg: reject,
+                labourCost: labour, date, _seq: getNextId(DB_KEYS.grading) });
+            setDB(DB_KEYS.grading, grading);
+
+            const currentUser = getCurrentUser();
+            logActivity(currentUser?.name || 'System', `Completed sorting: ${inputKg}kg input → ${g1}kg G1, ${g2}kg G2, ${reject}kg reject`);
+            closeModal();
+            showToast(t('sortingSaved'), 'success');
+            renderGrading();
+            renderInventory();
+        }
+
+        function deleteGrading(id) {
+            if (!confirm(t('confirmDeleteGrading'))) return;
+            let grading = getDB(DB_KEYS.grading);
+            grading = grading.filter(g => g.id !== id);
+            setDB(DB_KEYS.grading, grading);
+            showToast(t('gradingDeleted'), 'success');
+            renderGrading();
+        }
+
+        // ============================================================
+        // SALES
+        // ============================================================
+        function renderSales() {
+            const sales = getDB(DB_KEYS.sales);
+            const customers = getDB(DB_KEYS.customers);
+            const tbody = document.getElementById('salesTableBody');
+            if (sales.length === 0) {
+                tbody.innerHTML =
+                    `<tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:30px;">${t('noSales')}</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = sales.map(s => {
+                const cust = customers.find(c => c.id === s.customerId);
+                const statusBadge = s.balance <= 0 ? '<span class="badge-status badge-paid">Paid</span>' :
+                    '<span class="badge-status badge-credit">Credit</span>';
+                return `<tr>
+                    <td>${s.date}</td>
+                    <td>${cust?.name || 'Unknown'}</td>
+                    <td>${s.grade}</td>
+                    <td>${s.kgs?.toLocaleString()}</td>
+                    <td>UGX ${(s.pricePerKg || 0).toLocaleString()}</td>
+                    <td>UGX ${(s.total || 0).toLocaleString()}</td>
+                    <td>UGX ${(s.amountPaid || 0).toLocaleString()}</td>
+                    <td>UGX ${(s.balance || 0).toLocaleString()}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline" onclick="viewSale('${s.id}')">👁️ ${t('view')}</button>
+                        <button class="btn btn-sm btn-outline" onclick="deleteSale('${s.id}')">🗑️ ${t('delete')}</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function openSaleModal() {
+            const customers = getDB(DB_KEYS.customers);
+            const inventory = getDB(DB_KEYS.inventory);
+            const grades = ['Grade 1', 'Grade 2', 'Unsorted', 'Reject'];
+            const modalHTML = `
+                <div class="modal-header"><h3>💰 ${t('newSale')}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('customer')} *</label>
+                            <select id="s_customer">${customers.map(c => `<option value="${c.id}">${c.name} - ${c.shop} (${c.priceGroup})</option>`).join('')}</select>
+                        </div>
+                        <div class="form-group"><label>${t('date')} *</label><input type="date" id="s_date" value="${todayStr()}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('grade')} *</label><select id="s_grade">${grades.map(g => `<option>${g}</option>`).join('')}</select></div>
+                        <div class="form-group"><label>${t('kg')} *</label><input type="number" id="s_kgs" min="1" value="100" oninput="calcSaleTotal()"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('pricePerKg')} (UGX) *</label><input type="number" id="s_price" min="0" value="4000" oninput="calcSaleTotal()"></div>
+                        <div class="form-group"><label>${t('transportFee') || 'Transport Fee (UGX)'}</label><input type="number" id="s_transport" min="0" value="0" oninput="calcSaleTotal()"></div>
+                    </div>
+                    <div class="form-group"><label>${t('total')} (UGX)</label><input type="number" id="s_total" readonly></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('paymentMethod') || 'Payment Method'} *</label><select id="s_method"><option>Cash</option><option>MTN Money</option><option>Airtel Money</option><option>Bank</option><option>Credit</option></select></div>
+                        <div class="form-group"><label>${t('amountPaid') || 'Amount Paid (UGX)'}</label><input type="number" id="s_amountPaid" min="0" value="0" oninput="calcSaleTotal()"></div>
+                    </div>
+                    <div class="form-group"><label>${t('balance')} (UGX)</label><input type="number" id="s_balance" readonly></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+                    <button class="btn btn-success" onclick="saveSale()">${t('save')}</button>
+                </div>
+            `;
+            document.getElementById('modalContent').innerHTML = modalHTML;
+            document.getElementById('modalOverlay').style.display = 'flex';
+            calcSaleTotal();
+        }
+
+        function calcSaleTotal() {
+            const kgs = parseFloat(document.getElementById('s_kgs')?.value) || 0;
+            const price = parseFloat(document.getElementById('s_price')?.value) || 0;
+            const transport = parseFloat(document.getElementById('s_transport')?.value) || 0;
+            const total = kgs * price + transport;
+            if (document.getElementById('s_total')) document.getElementById('s_total').value = total.toFixed(0);
+            const paid = parseFloat(document.getElementById('s_amountPaid')?.value) || 0;
+            if (document.getElementById('s_balance')) document.getElementById('s_balance').value = Math.max(0, total -
+                paid).toFixed(0);
+        }
+
+        function saveSale() {
+            const customerId = document.getElementById('s_customer')?.value;
+            const grade = document.getElementById('s_grade')?.value;
+            const kgs = parseFloat(document.getElementById('s_kgs')?.value) || 0;
+            const price = parseFloat(document.getElementById('s_price')?.value) || 0;
+            const total = parseFloat(document.getElementById('s_total')?.value) || 0;
+            const method = document.getElementById('s_method')?.value || 'Cash';
+            const amountPaid = parseFloat(document.getElementById('s_amountPaid')?.value) || 0;
+            const balance = parseFloat(document.getElementById('s_balance')?.value) || 0;
+            const date = document.getElementById('s_date')?.value || todayStr();
+
+            if (!customerId || kgs <= 0) { showToast(t('fillAllFields'), 'error'); return; }
+
+            // Check if inventory has enough stock
+            const inventory = getDB(DB_KEYS.inventory);
+            const stockItems = inventory.filter(i => i.grade === grade);
+            const availableKg = stockItems.reduce((s, i) => s + i.kgs, 0);
+            if (kgs > availableKg) { showToast(`${t('notEnoughStock')} ${grade}! ${t('available')}: ${availableKg}kg`, 'error'); return; }
+
+            // Deduct from inventory
+            let remainingToDeduct = kgs;
+            for (let item of stockItems) {
+                if (remainingToDeduct <= 0) break;
+                const deductFrom = Math.min(item.kgs, remainingToDeduct);
+                item.kgs -= deductFrom;
+                item.sacks = Math.ceil(item.kgs / 100);
+                remainingToDeduct -= deductFrom;
+            }
+            inventory.filter(i => i.kgs <= 0).forEach(i => inventory.splice(inventory.indexOf(i), 1));
+            setDB(DB_KEYS.inventory, inventory);
+
+            const sale = {
+                id: generateId('sal'),
+                customerId,
+                grade,
+                kgs,
+                pricePerKg: price,
+                total,
+                transportFee: parseFloat(document.getElementById('s_transport')?.value) || 0,
+                paymentMethod: method,
+                amountPaid,
+                balance,
+                date,
+                _seq: getNextId(DB_KEYS.sales),
+            };
+            const sales = getDB(DB_KEYS.sales);
+            sales.unshift(sale);
+            setDB(DB_KEYS.sales, sales);
+
+            // Update customer balance
+            if (balance > 0) {
+                const customers = getDB(DB_KEYS.customers);
+                const cust = customers.find(c => c.id === customerId);
+                if (cust) {
+                    cust.balance = (cust.balance || 0) + balance;
+                    setDB(DB_KEYS.customers, customers);
+                }
+            }
+
+            // Record payment if any
+            if (amountPaid > 0) {
+                const payments = getDB(DB_KEYS.payments);
+                payments.unshift({ id: generateId('pay'), customerId, amount: amountPaid, method, date,
+                    saleId: sale.id, _seq: getNextId(DB_KEYS.payments) });
+                setDB(DB_KEYS.payments, payments);
+            }
+
+            const currentUser = getCurrentUser();
+            logActivity(currentUser?.name || 'System', `Sold ${kgs}kg ${grade} for UGX ${total.toLocaleString()} - ${method}`);
+            closeModal();
+            showToast(t('saleSaved'), 'success');
+            renderSales();
+            renderDashboard();
+            renderInventory();
+        }
+
+        function viewSale(id) {
+            const sales = getDB(DB_KEYS.sales);
+            const s = sales.find(x => x.id === id);
+            if (!s) return;
+            const customers = getDB(DB_KEYS.customers);
+            const cust = customers.find(c => c.id === s.customerId);
+            alert(`Sale Details:\n\nCustomer: ${cust?.name || 'Unknown'}\nDate: ${s.date}\nGrade: ${s.grade}\nKg: ${s.kgs}\nPrice: UGX ${s.pricePerKg}/kg\nTotal: UGX ${s.total}\nPaid: UGX ${s.amountPaid}\nBalance: UGX ${s.balance}\nMethod: ${s.paymentMethod}`);
+        }
+
+        function deleteSale(id) {
+            if (!confirm(t('confirmDeleteSale'))) return;
+            let sales = getDB(DB_KEYS.sales);
+            const sale = sales.find(s => s.id === id);
+            sales = sales.filter(s => s.id !== id);
+            setDB(DB_KEYS.sales, sales);
+            // Restore inventory
+            const inventory = getDB(DB_KEYS.inventory);
+            inventory.push({ id: generateId('inv'), grade: sale.grade, warehouse: 'Kisenyi Store 1', sacks: Math
+                    .ceil(sale.kgs / 100), kgs: sale.kgs, trueCostPerKg: sale.pricePerKg * 0.7, source: 'Return',
+                sourceId: id, _seq: getNextId(DB_KEYS.inventory) });
+            setDB(DB_KEYS.inventory, inventory);
+            showToast(t('saleDeleted'), 'success');
+            renderSales();
+            renderDashboard();
+        }
+
+        // ============================================================
+        // CREDIT & PAYMENTS
+        // ============================================================
+        function renderCredit() {
+            const customers = getDB(DB_KEYS.customers);
+            const payments = getDB(DB_KEYS.payments);
+            const sales = getDB(DB_KEYS.sales);
+
+            const totalCredit = customers.reduce((s, c) => s + (c.balance || 0), 0);
+            const overdue = customers.filter(c => c.balance > 0).length;
+            const paymentsToday = payments.filter(p => p.date === todayStr()).reduce((s, p) => s + p.amount, 0);
+
+            const statsHTML = `
+                <div class="stat-card warning"><div class="stat-icon">📋</div><div class="stat-label">${t('totalOutstanding') || 'Total Outstanding'}</div><div class="stat-value">UGX ${totalCredit.toLocaleString()}</div><div class="stat-sub">${overdue} ${t('customersOwe') || 'customers owe'}</div></div>
+                <div class="stat-card info"><div class="stat-icon">💳</div><div class="stat-label">${t('paymentsToday') || 'Payments Today'}</div><div class="stat-value">UGX ${paymentsToday.toLocaleString()}</div><div class="stat-sub">${todayStr()}</div></div>
+                <div class="stat-card danger"><div class="stat-icon">⚠️</div><div class="stat-label">${t('overdue30') || 'Overdue 30+ days'}</div><div class="stat-value">${customers.filter(c => c.overdueDays > 30).length}</div><div class="stat-sub">${t('needsAttention') || 'Needs attention'}</div></div>
+                <div class="stat-card success"><div class="stat-icon">✅</div><div class="stat-label">${t('goodStanding') || 'In Good Standing'}</div><div class="stat-value">${customers.filter(c => !c.balance || c.balance <= 0).length}</div><div class="stat-sub">${t('noDebt') || 'No outstanding debt'}</div></div>
+            `;
+            document.getElementById('creditStats').innerHTML = statsHTML;
+
+            const tbody = document.getElementById('creditTableBody');
+            if (customers.length === 0) {
+                tbody.innerHTML =
+                    `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px;">${t('noCustomers')}</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = customers.map(c => {
+                const custSales = sales.filter(s => s.customerId === c.id);
+                const totalCreditAmount = custSales.reduce((s, s2) => s + s2.total, 0);
+                const totalPaid = payments.filter(p => p.customerId === c.id).reduce((s, p) => s + p.amount,
+                    0);
+                const balance = c.balance || 0;
+                const lastSale = custSales.length > 0 ? custSales[0].date : null;
+                let aging = 'No sales';
+                let agingClass = '';
+                if (lastSale) {
+                    const days = Math.floor((new Date() - new Date(lastSale)) / (1000 * 60 * 60 * 24));
+                    if (days <= 7) { aging = '0-7 days';
+                        agingClass = 'badge-ok'; } else if (days <= 14) { aging = '8-14 days';
+                        agingClass = 'badge-paid'; } else if (days <= 30) { aging = '15-30 days';
+                        agingClass = 'badge-advance'; } else { aging = '30+ Overdue';
+                        agingClass = 'badge-overdue'; }
+                }
+                const status = balance > 0 ? (c.overdueDays > 45 ? 'Blacklisted' : 'Active Credit') : 'Settled';
+                const statusClass = balance > 0 ? (c.overdueDays > 45 ? 'badge-overdue' : 'badge-credit') :
+                    'badge-paid';
+                return `<tr>
+                    <td>${c.name}</td>
+                    <td>UGX ${totalCreditAmount.toLocaleString()}</td>
+                    <td>UGX ${totalPaid.toLocaleString()}</td>
+                    <td>UGX ${balance.toLocaleString()}</td>
+                    <td><span class="badge-status ${agingClass}">${aging}</span></td>
+                    <td><span class="badge-status ${statusClass}">${status}</span></td>
+                    <td><button class="btn btn-sm btn-warning" onclick="openPaymentModalFor('${c.id}')">📝 ${t('pay') || 'Pay'}</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function openPaymentModal() {
+            const customers = getDB(DB_KEYS.customers).filter(c => c.balance > 0);
+            if (customers.length === 0) { showToast(t('noCustomersWithBalance'), 'info'); return; }
+            openPaymentModalFor(customers[0].id);
+        }
+
+        function openPaymentModalFor(customerId) {
+            const customers = getDB(DB_KEYS.customers);
+            const customer = customers.find(c => c.id === customerId);
+            if (!customer) { showToast(t('customerNotFound'), 'error'); return; }
+            const modalHTML = `
+                <div class="modal-header"><h3>📝 ${t('recordPayment')} - ${customer.name}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+                <div class="modal-body">
+                    <div class="form-group"><label>${t('customer')}</label><input type="text" value="${customer.name}" readonly></div>
+                    <div class="form-group"><label>${t('currentBalance') || 'Current Balance'}</label><input type="text" value="UGX ${(customer.balance || 0).toLocaleString()}" readonly></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('paymentAmount') || 'Payment Amount (UGX)'} *</label><input type="number" id="pay_amount" min="1" value="${Math.min(customer.balance || 0, 100000)}"></div>
+                        <div class="form-group"><label>${t('paymentMethod') || 'Payment Method'} *</label><select id="pay_method"><option>Cash</option><option>MTN Money</option><option>Airtel Money</option><option>Bank</option></select></div>
+                    </div>
+                    <div class="form-group"><label>${t('date')}</label><input type="date" id="pay_date" value="${todayStr()}"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+                    <button class="btn btn-warning" onclick="savePayment('${customerId}')">${t('save')}</button>
+                </div>
+            `;
+            document.getElementById('modalContent').innerHTML = modalHTML;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function savePayment(customerId) {
+            const amount = parseFloat(document.getElementById('pay_amount')?.value) || 0;
+            const method = document.getElementById('pay_method')?.value || 'Cash';
+            const date = document.getElementById('pay_date')?.value || todayStr();
+            if (amount <= 0) { showToast(t('enterValidAmount'), 'error'); return; }
+
+            const customers = getDB(DB_KEYS.customers);
+            const customer = customers.find(c => c.id === customerId);
+            if (customer) {
+                customer.balance = Math.max(0, (customer.balance || 0) - amount);
+                setDB(DB_KEYS.customers, customers);
+            }
+
+            const payments = getDB(DB_KEYS.payments);
+            payments.unshift({ id: generateId('pay'), customerId, amount, method, date, _seq: getNextId(DB_KEYS
+                    .payments) });
+            setDB(DB_KEYS.payments, payments);
+
+            const currentUser = getCurrentUser();
+            logActivity(currentUser?.name || 'System', `Recorded payment of UGX ${amount.toLocaleString()} from ${customer?.name || 'customer'}`);
+            closeModal();
+            showToast(t('paymentRecorded'), 'success');
+            renderCredit();
+            renderDashboard();
+        }
+
+        // ============================================================
+        // EXPENSES
+        // ============================================================
+        function renderExpenses() {
+            const expenses = getDB(DB_KEYS.expenses);
+            const totalToday = expenses.filter(e => e.date === todayStr()).reduce((s, e) => s + e.amount, 0);
+            const totalMonth = expenses.filter(e => e.date?.startsWith(todayStr().substring(0, 7))).reduce((s, e) => s +
+                e.amount, 0);
+            const totalAll = expenses.reduce((s, e) => s + e.amount, 0);
+
+            const statsHTML = `
+                <div class="stat-card info"><div class="stat-icon">📅</div><div class="stat-label">${t('today') || 'Today'}</div><div class="stat-value">UGX ${totalToday.toLocaleString()}</div><div class="stat-sub">${todayStr()}</div></div>
+                <div class="stat-card warning"><div class="stat-icon">📆</div><div class="stat-label">${t('thisMonth') || 'This Month'}</div><div class="stat-value">UGX ${totalMonth.toLocaleString()}</div><div class="stat-sub">${todayStr().substring(0,7)}</div></div>
+                <div class="stat-card danger"><div class="stat-icon">💰</div><div class="stat-label">${t('totalExpenses') || 'Total Expenses'}</div><div class="stat-value">UGX ${totalAll.toLocaleString()}</div><div class="stat-sub">${t('allTime') || 'All time'}</div></div>
+            `;
+            document.getElementById('expenseStats').innerHTML = statsHTML;
+
+            const tbody = document.getElementById('expensesTableBody');
+            if (expenses.length === 0) {
+                tbody.innerHTML =
+                    `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:30px;">${t('noExpenses')}</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = expenses.map(e => `<tr>
+                <td>${e.date}</td>
+                <td>${e.category}</td>
+                <td>UGX ${(e.amount || 0).toLocaleString()}</td>
+                <td>${e.note || '-'}</td>
+                <td><button class="btn btn-sm btn-outline" onclick="deleteExpense('${e.id}')">🗑️ ${t('delete')}</button></td>
+            </tr>`).join('');
+        }
+
+        function openExpenseModal() {
+            const categories = ['Transport', 'Labour', 'Sack bags', 'Market dues', 'Rent', 'Fuel', 'Agent commission',
+                'URA', 'Pest control', 'Other'
+            ];
+            const modalHTML = `
+                <div class="modal-header"><h3>🧾 ${t('addExpense')}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('category')} *</label><select id="e_category">${categories.map(c => `<option>${c}</option>`).join('')}</select></div>
+                        <div class="form-group"><label>${t('amount')} *</label><input type="number" id="e_amount" min="1" value="0"></div>
+                    </div>
+                    <div class="form-group"><label>${t('note')}</label><textarea id="e_note" placeholder="Description..."></textarea></div>
+                    <div class="form-group"><label>${t('date')}</label><input type="date" id="e_date" value="${todayStr()}"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+                    <button class="btn btn-primary" onclick="saveExpense()">${t('save')}</button>
+                </div>
+            `;
+            document.getElementById('modalContent').innerHTML = modalHTML;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function saveExpense() {
+            const category = document.getElementById('e_category')?.value;
+            const amount = parseFloat(document.getElementById('e_amount')?.value) || 0;
+            const note = document.getElementById('e_note')?.value || '';
+            const date = document.getElementById('e_date')?.value || todayStr();
+            if (amount <= 0 || !category) { showToast(t('fillAllFields'), 'error'); return; }
+
+            const expenses = getDB(DB_KEYS.expenses);
+            expenses.unshift({ id: generateId('exp'), category, amount, note, date, _seq: getNextId(DB_KEYS
+                    .expenses) });
+            setDB(DB_KEYS.expenses, expenses);
+            const currentUser = getCurrentUser();
+            logActivity(currentUser?.name || 'System', `Added expense: ${category} - UGX ${amount.toLocaleString()}`);
+            closeModal();
+            showToast(t('expenseSaved'), 'success');
+            renderExpenses();
+            renderDashboard();
+        }
+
+        function deleteExpense(id) {
+            if (!confirm(t('confirmDeleteExpense'))) return;
+            let expenses = getDB(DB_KEYS.expenses);
+            expenses = expenses.filter(e => e.id !== id);
+            setDB(DB_KEYS.expenses, expenses);
+            showToast(t('expenseDeleted'), 'success');
+            renderExpenses();
+        }
+
+        // ============================================================
+        // FINANCE & PROFIT
+        // ============================================================
+        function renderFinance() {
+            const sales = getDB(DB_KEYS.sales);
+            const expenses = getDB(DB_KEYS.expenses);
+            const purchases = getDB(DB_KEYS.purchases);
+            const payments = getDB(DB_KEYS.payments);
+
+            const totalRevenue = sales.reduce((s, s2) => s + s2.total, 0);
+            const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
+            const totalPurchases = purchases.reduce((s, p) => s + p.totalPayable, 0);
+            const totalPaymentsReceived = payments.reduce((s, p) => s + p.amount, 0);
+            const totalProfit = totalRevenue - totalExpenses - totalPurchases + totalPaymentsReceived;
+
+            const statsHTML = `
+                <div class="stat-card success"><div class="stat-icon">📈</div><div class="stat-label">${t('totalRevenue') || 'Total Revenue'}</div><div class="stat-value">UGX ${totalRevenue.toLocaleString()}</div><div class="stat-sub">${t('fromSales') || 'From sales'}</div></div>
+                <div class="stat-card info"><div class="stat-icon">💳</div><div class="stat-label">${t('paymentsReceived') || 'Payments Received'}</div><div class="stat-value">UGX ${totalPaymentsReceived.toLocaleString()}</div><div class="stat-sub">${t('allCollections') || 'All collections'}</div></div>
+                <div class="stat-card warning"><div class="stat-icon">📦</div><div class="stat-label">${t('totalPurchases') || 'Total Purchases'}</div><div class="stat-value">UGX ${totalPurchases.toLocaleString()}</div><div class="stat-sub">${t('costOfGoods') || 'Cost of goods'}</div></div>
+                <div class="stat-card danger"><div class="stat-icon">🧾</div><div class="stat-label">${t('totalExpenses') || 'Total Expenses'}</div><div class="stat-value">UGX ${totalExpenses.toLocaleString()}</div><div class="stat-sub">${t('operationalCosts') || 'Operational costs'}</div></div>
+                <div class="stat-card ${totalProfit >= 0 ? 'success' : 'danger'}"><div class="stat-icon">💰</div><div class="stat-label">${t('netProfit') || 'Net Profit'}</div><div class="stat-value">UGX ${totalProfit.toLocaleString()}</div><div class="stat-sub">Revenue - Costs</div></div>
+            `;
+            document.getElementById('financeStats').innerHTML = statsHTML;
+
+            const summaryHTML = `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                    <div style="background:#f8f9fb;padding:20px;border-radius:8px;">
+                        <h4 style="margin-bottom:12px;font-weight:700;">📊 ${t('cashFlow') || 'Cash Flow'}</h4>
+                        <div class="flex-between" style="padding:6px 0;"><span>${t('moneyIn') || 'Money In (Sales + Payments)'}</span><strong>UGX ${(totalRevenue + totalPaymentsReceived).toLocaleString()}</strong></div>
+                        <div class="flex-between" style="padding:6px 0;border-top:1px solid var(--border);"><span>${t('moneyOut') || 'Money Out (Purchases + Expenses)'}</span><strong>UGX ${(totalPurchases + totalExpenses).toLocaleString()}</strong></div>
+                        <div class="flex-between" style="padding:8px 0;border-top:2px solid var(--accent);margin-top:8px;"><span style="font-weight:700;">${t('netCashFlow') || 'Net Cash Flow'}</span><strong style="color:${totalProfit >= 0 ? 'var(--success)' : 'var(--danger)'};">UGX ${totalProfit.toLocaleString()}</strong></div>
+                    </div>
+                    <div style="background:#f8f9fb;padding:20px;border-radius:8px;">
+                        <h4 style="margin-bottom:12px;font-weight:700;">💡 ${t('keyRatios') || 'Key Ratios'}</h4>
+                        <div class="flex-between" style="padding:6px 0;"><span>${t('avgSaleValue') || 'Avg Sale Value'}</span><strong>UGX ${sales.length > 0 ? Math.round(totalRevenue / sales.length).toLocaleString() : 0}</strong></div>
+                        <div class="flex-between" style="padding:6px 0;border-top:1px solid var(--border);"><span>${t('totalSalesCount') || 'Total Sales Count'}</span><strong>${sales.length}</strong></div>
+                        <div class="flex-between" style="padding:6px 0;border-top:1px solid var(--border);"><span>${t('totalPurchasesCount') || 'Total Purchases Count'}</span><strong>${purchases.length}</strong></div>
+                        <div class="flex-between" style="padding:6px 0;border-top:1px solid var(--border);"><span>${t('margin') || 'Margin %'}</span><strong>${totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : 0}%</strong></div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('financeSummary').innerHTML = summaryHTML;
+        }
+
+        // ============================================================
+        // REPORTS
+        // ============================================================
+        function renderReports() {
+            const sales = getDB(DB_KEYS.sales);
+            const customers = getDB(DB_KEYS.customers);
+            const purchases = getDB(DB_KEYS.purchases);
+            const suppliers = getDB(DB_KEYS.suppliers);
+            const inventory = getDB(DB_KEYS.inventory);
+            const expenses = getDB(DB_KEYS.expenses);
+
+            // Best selling grade
+            const gradeSales = {};
+            sales.forEach(s => { gradeSales[s.grade] = (gradeSales[s.grade] || 0) + s.kgs; });
+            const bestGrade = Object.entries(gradeSales).sort((a, b) => b[1] - a[1])[0];
+
+            // Most profitable customer
+            const customerProfit = {};
+            sales.forEach(s => {
+                customerProfit[s.customerId] = (customerProfit[s.customerId] || 0) + s.total;
+            });
+            const bestCustomerId = Object.entries(customerProfit).sort((a, b) => b[1] - a[1])[0]?.[0];
+            const bestCustomer = customers.find(c => c.id === bestCustomerId);
+
+            // Most profitable district (purchases)
+            const districtPurchases = {};
+            purchases.forEach(p => {
+                const sup = suppliers.find(s => s.id === p.supplierId);
+                if (sup) districtPurchases[sup.district] = (districtPurchases[sup.district] || 0) + p
+                    .totalPayable;
+            });
+            const bestDistrict = Object.entries(districtPurchases).sort((a, b) => b[1] - a[1])[0];
+
+            // Stock valuation
+            const stockValue = inventory.reduce((s, i) => s + (i.kgs * i.trueCostPerKg), 0);
+
+            // Debtors report
+            const debtors = customers.filter(c => c.balance > 0);
+
+            const reportsHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card success"><div class="stat-icon">🏆</div><div class="stat-label">${t('bestGrade') || 'Best Selling Grade'}</div><div class="stat-value">${bestGrade ? bestGrade[0] : 'N/A'}</div><div class="stat-sub">${bestGrade ? bestGrade[1].toLocaleString() + ' kg' : ''}</div></div>
+                    <div class="stat-card info"><div class="stat-icon">👤</div><div class="stat-label">${t('topCustomer') || 'Top Customer'}</div><div class="stat-value">${bestCustomer ? bestCustomer.name : 'N/A'}</div><div class="stat-sub">${bestCustomer ? 'UGX ' + (customerProfit[bestCustomerId] || 0).toLocaleString() : ''}</div></div>
+                    <div class="stat-card warning"><div class="stat-icon">📍</div><div class="stat-label">${t('topDistrict') || 'Top District'}</div><div class="stat-value">${bestDistrict ? bestDistrict[0] : 'N/A'}</div><div class="stat-sub">${bestDistrict ? 'UGX ' + bestDistrict[1].toLocaleString() : ''}</div></div>
+                    <div class="stat-card accent"><div class="stat-icon">🏭</div><div class="stat-label">${t('stockValuation') || 'Stock Valuation'}</div><div class="stat-value">UGX ${stockValue.toLocaleString()}</div><div class="stat-sub">${inventory.length} items</div></div>
+                </div>
+                <div class="table-container mt-16">
+                    <div class="table-header"><h3>📋 ${t('debtorsReport') || 'Debtors Report (Who Owes You)'}</h3></div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead><tr><th>${t('customer')}</th><th>${t('shop') || 'Shop'}</th><th>${t('phone') || 'Phone'}</th><th>${t('balance')}</th></tr></thead>
+                            <tbody>
+                                ${debtors.length > 0 ? debtors.map(d => `<tr><td>${d.name}</td><td>${d.shop || '-'}</td><td>${d.phone || '-'}</td><td>UGX ${(d.balance || 0).toLocaleString()}</td></tr>`).join('') : `<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--text-muted);">${t('noDebtors')}</td></tr>`}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-container mt-16">
+                    <div class="table-header"><h3>📊 ${t('salesByGrade') || 'Sales by Grade'}</h3></div>
+                    <div style="padding:20px;">
+                        <div class="chart-bar-container">
+                            ${Object.entries(gradeSales).map(([grade, kgs]) => {
+                                const maxVal = Math.max(...Object.values(gradeSales)) || 1;
+                                const height = (kgs / maxVal) * 100;
+                                return `<div class="chart-bar" style="height:${Math.max(height, 5)}%;"><span class="bar-value">${kgs.toLocaleString()}</span><span class="bar-label">${grade}</span></div>`;
+                            }).join('') || `<p class="text-muted">${t('noSalesData') || 'No sales data'}</p>`}
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container mt-16">
+                    <div class="table-header"><h3>📈 ${t('monthlyExpenses') || 'Monthly Expenses Overview'}</h3></div>
+                    <div style="padding:20px;">
+                        <div class="chart-bar-container">
+                            ${(() => {
+                                const monthExpenses = {};
+                                expenses.forEach(e => {
+                                    const month = e.date?.substring(0,7) || 'Unknown';
+                                    monthExpenses[month] = (monthExpenses[month] || 0) + e.amount;
+                                });
+                                const maxVal = Math.max(...Object.values(monthExpenses)) || 1;
+                                return Object.entries(monthExpenses).map(([month, amt]) => {
+                                    const height = (amt / maxVal) * 100;
+                                    return `<div class="chart-bar" style="height:${Math.max(height, 5)}%;background:#d32f2f;"><span class="bar-value">${(amt/1000).toFixed(0)}k</span><span class="bar-label">${month}</span></div>`;
+                                }).join('') || `<p class="text-muted">${t('noExpenseData') || 'No expense data'}</p>`;
+                            })()}
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('reportsContent').innerHTML = reportsHTML;
+        }
+
+        // ============================================================
+        // USERS & SECURITY
+        // ============================================================
+        function renderUsers() {
+            const users = getDB(DB_KEYS.users);
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td>${u.name}</td>
+                    <td>${u.username}</td>
+                    <td><span class="badge-status ${u.role === 'Admin' ? 'badge-overdue' : u.role === 'Cashier' ? 'badge-paid' : 'badge-ok'}">${u.role}</span></td>
+                    <td>${u.role === 'Admin' ? 'Full access' : u.role === 'Storekeeper' ? 'Stock only' : u.role === 'Cashier' ? 'Sales & payments' : 'Purchases only'}</td>
+                    <td>
+                        ${u.username !== 'admin' ? `<button class="btn btn-sm btn-outline" onclick="deleteUser('${u.id}')">🗑️ ${t('delete')}</button>` : `<span class="text-muted">${t('default') || 'Default'}</span>`}
+                    </td>
+                </tr>
+            `).join('');
+
+            const activity = getDB(DB_KEYS.activityLog);
+            const activityBody = document.getElementById('activityLogBody');
+            activityBody.innerHTML = activity.slice(0, 50).map(a => `
+                <tr>
+                    <td>${new Date(a.timestamp).toLocaleString()}</td>
+                    <td>${a.userId}</td>
+                    <td>${a.action}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text-muted);">${t('noActivityLog')}</td></tr>`;
+        }
+
+        function openUserModal() {
+            const modalHTML = `
+                <div class="modal-header"><h3>👥 ${t('addUser')}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('name')} *</label><input type="text" id="u_name"></div>
+                        <div class="form-group"><label>${t('username')} *</label><input type="text" id="u_username"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>${t('password')} *</label><input type="password" id="u_password"></div>
+                        <div class="form-group"><label>${t('role')} *</label><select id="u_role"><option>Storekeeper</option><option>Cashier</option><option>Buyer</option><option>Admin</option></select></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal()">${t('cancel')}</button>
+                    <button class="btn btn-primary" onclick="saveUser()">${t('save')}</button>
+                </div>
+            `;
+            document.getElementById('modalContent').innerHTML = modalHTML;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function saveUser() {
+            const name = document.getElementById('u_name')?.value;
+            const username = document.getElementById('u_username')?.value;
+            const password = document.getElementById('u_password')?.value;
+            const role = document.getElementById('u_role')?.value;
+            if (!name || !username || !password) { showToast(t('fillAllFields'), 'error'); return; }
+
+            const users = getDB(DB_KEYS.users);
+            if (users.find(u => u.username === username)) { showToast(t('usernameExists'), 'error'); return; }
+            users.push({ id: generateId('usr'), name, username, password, role, isLoggedIn: false, _seq: getNextId(
+                    DB_KEYS.users) });
+            setDB(DB_KEYS.users, users);
+            const currentUser = getCurrentUser();
+            logActivity(currentUser?.name || 'System', `Added new user: ${name} (${role})`);
+            closeModal();
+            showToast(t('userAdded'), 'success');
+            renderUsers();
+        }
+
+        function deleteUser(id) {
+            if (!confirm(t('confirmDeleteUser'))) return;
+            let users = getDB(DB_KEYS.users);
+            users = users.filter(u => u.id !== id);
+            setDB(DB_KEYS.users, users);
+            showToast(t('userDeleted'), 'success');
+            renderUsers();
+        }
+
+        // ============================================================
+        // MODAL UTILITIES
+        // ============================================================
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+
+        function closeModalOnOverlay(event) {
+            if (event.target === document.getElementById('modalOverlay')) {
+                closeModal();
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+            toast.innerHTML = `<span>${icon}</span> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ============================================================
+        // SEARCH
+        // ============================================================
+        function handleSearch(query) {
+            if (!query || query.length < 2) return;
+            const results = [];
+            const customers = getDB(DB_KEYS.customers);
+            const suppliers = getDB(DB_KEYS.suppliers);
+
+            customers.forEach(c => {
+                if (c.name.toLowerCase().includes(query.toLowerCase()) || (c.shop || '').toLowerCase()
+                    .includes(query.toLowerCase())) results.push(`Customer: ${c.name} (${c.shop || 'No shop'})`);
+            });
+            suppliers.forEach(s => {
+                if (s.name.toLowerCase().includes(query.toLowerCase()) || (s.district || '').toLowerCase()
+                    .includes(query.toLowerCase())) results.push(`Supplier: ${s.name} (${s.district})`);
+            });
+
+            if (results.length > 0) {
+                showToast(`${t('searchResults')}: ${results.slice(0, 3).join(' | ')}`, 'info');
+            }
+        }
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDatabase();
+            // Set language from localStorage
+            const savedLang = localStorage.getItem('bms_lang') || 'en';
+            currentLang = savedLang;
+            document.getElementById('languageSelector').value = savedLang;
+            applyTranslations();
+            // Check if user is already logged in
+            const currentUser = getCurrentUser();
+            if (currentUser) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                updateUserInfo();
+                renderPage('dashboard');
+            } else {
+                document.getElementById('loginOverlay').style.display = 'flex';
+            }
+        });
+
+        // Expose functions to global scope for inline onclick handlers
+        window.navigateTo = navigateTo;
+        window.toggleSidebar = toggleSidebar;
+        window.openPurchaseModal = openPurchaseModal;
+        window.openSaleModal = openSaleModal;
+        window.openPaymentModal = openPaymentModal;
+        window.openPaymentModalFor = openPaymentModalFor;
+        window.openExpenseModal = openExpenseModal;
+        window.openTransferModal = openTransferModal;
+        window.openGradingModal = openGradingModal;
+        window.openUserModal = openUserModal;
+        window.openEditStockModal = openEditStockModal;
+        window.closeModal = closeModal;
+        window.closeModalOnOverlay = closeModalOnOverlay;
+        window.calcPurchaseNet = calcPurchaseNet;
+        window.calcPurchaseBalance = calcPurchaseBalance;
+        window.savePurchase = savePurchase;
+        window.saveSale = saveSale;
+        window.saveExpense = saveExpense;
+        window.savePayment = savePayment;
+        window.saveTransfer = saveTransfer;
+        window.saveGrading = saveGrading;
+        window.saveUser = saveUser;
+        window.saveStockEdit = saveStockEdit;
+        window.updateKgsFromSacks = updateKgsFromSacks;
+        window.updateSacksFromKgs = updateSacksFromKgs;
+        window.viewPurchase = viewPurchase;
+        window.viewSale = viewSale;
+        window.deletePurchase = deletePurchase;
+        window.deleteSale = deleteSale;
+        window.deleteExpense = deleteExpense;
+        window.deleteGrading = deleteGrading;
+        window.deleteUser = deleteUser;
+        window.calcSaleTotal = calcSaleTotal;
+        window.handleSearch = handleSearch;
+        window.renderPurchases = renderPurchases;
+        window.renderSales = renderSales;
+        window.renderInventory = renderInventory;
+        window.renderGrading = renderGrading;
+        window.renderCredit = renderCredit;
+        window.renderExpenses = renderExpenses;
+        window.renderFinance = renderFinance;
+        window.renderReports = renderReports;
+        window.renderUsers = renderUsers;
+        window.renderDashboard = renderDashboard;
+        window.login = login;
+        window.logout = logout;
+        window.setLanguage = setLanguage;
+        window.t = t;
+    </script>
+</body>
+</html>
