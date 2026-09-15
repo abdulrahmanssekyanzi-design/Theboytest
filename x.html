@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TikTok Web Clone</title>
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        tiktokRed: '#FE2C55',
+                        tiktokCyan: '#25F4EE',
+                        tiktokDark: '#121212',
+                        tiktokGray: '#2F2F2F'
+                    },
+                    animation: {
+                        'spin-slow': 'spin 3s linear infinite',
+                        'pulse-fast': 'pulse 0.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Phosphor Icons for high-quality clean icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0c0c;
+            overscroll-behavior-y: contain;
+        }
+        /* Hide scrollbars for absolute clean mobile styling */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Heart pop animation */
+        @keyframes heartPop {
+            0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+            50% { transform: scale(1.3) rotate(10deg); opacity: 0.9; }
+            100% { transform: scale(1) rotate(0deg); opacity: 0; }
+        }
+        .heart-pop-animation {
+            animation: heartPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        /* Custom video progress line tracking */
+        .video-progress-bar {
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body class="text-white flex justify-center items-center h-screen w-screen overflow-hidden select-none">
+
+    <!-- The main simulator frame mimics a mobile device on desktop and scales flawlessly to full-screen on mobile -->
+    <div id="phone-container" class="relative w-full h-full md:max-w-[420px] md:h-[860px] md:rounded-[40px] md:border-8 md:border-neutral-800 bg-black flex flex-col overflow-hidden md:shadow-[0_0_50px_rgba(254,44,85,0.15)] transition-all duration-300">
+        
+        <!-- Status bar simulator for modern device aesthetics (desktop viewports) -->
+        <div class="hidden md:flex justify-between items-center px-6 py-2 bg-black text-xs text-neutral-400 z-50">
+            <span>9:41</span>
+            <div class="flex gap-1">
+                <i class="ph ph-wifi-high text-sm"></i>
+                <i class="ph ph-battery-full text-base"></i>
+            </div>
+        </div>
+
+        <!-- Custom Notification Toast System (replaces alert) -->
+        <div id="notification-toast" class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-neutral-900/90 border border-neutral-700 text-sm text-white px-4 py-2 rounded-full shadow-2xl opacity-0 translate-y-[-20px] transition-all duration-300 pointer-events-none z-[100] flex items-center gap-2">
+            <i class="ph ph-info text-tiktokCyan"></i>
+            <span id="toast-message">Notification message</span>
+        </div>
+
+        <!-- Content Area containing structural pages: Feed (Home), Discover, Create, Inbox, Profile -->
+        <main class="relative flex-1 w-full h-full overflow-hidden bg-black">
+
+            <!-- PAGE 1: HOME (VERTICAL SCROLL VIDEO FEED) -->
+            <section id="page-home" class="page-view absolute inset-0 w-full h-full active flex flex-col">
+                <!-- Top Tabs -->
+                <div class="absolute top-0 left-0 w-full flex justify-center gap-6 py-4 z-40 bg-gradient-to-b from-black/60 to-transparent">
+                    <button class="font-semibold text-neutral-400 text-base relative px-1 tracking-wide duration-200 hover:text-white">Following</button>
+                    <button class="font-bold text-white text-base relative px-1 tracking-wide duration-200">
+                        For You
+                        <span class="absolute bottom-[-4px] left-1/2 transform -translate-x-1/2 w-4 h-1 bg-tiktokRed rounded-full"></span>
+                    </button>
+                </div>
+
+                <!-- Video Scroll Area Container -->
+                <div id="video-feed-container" class="relative flex-1 w-full h-full overflow-hidden touch-pan-y">
+                    <!-- Dynamic videos get injected here via JS -->
+                </div>
+            </section>
+
+            <!-- PAGE 2: DISCOVER (SEARCH & TRENDING) -->
+            <section id="page-discover" class="page-view absolute inset-0 w-full h-full hidden bg-tiktokDark flex flex-col p-4 overflow-y-auto no-scrollbar">
+                <div class="sticky top-0 bg-tiktokDark/95 pt-2 pb-4 z-30">
+                    <div class="relative flex items-center bg-tiktokGray rounded-full px-4 py-2.5">
+                        <i class="ph ph-magnifying-glass text-neutral-400 mr-2 text-lg"></i>
+                        <input id="search-input" type="text" placeholder="Search trends, creators, hashtags..." class="bg-transparent border-none text-white text-sm outline-none w-full focus:ring-0">
+                        <i class="ph ph-qr-code text-neutral-400 text-lg hover:text-white cursor-pointer"></i>
+                    </div>
+                </div>
+
+                <!-- Banner Slider Grid -->
+                <div class="relative w-full h-36 rounded-2xl overflow-hidden mb-6 bg-gradient-to-r from-tiktokRed/80 to-purple-800 flex items-end p-4 shadow-lg shrink-0">
+                    <div class="z-10">
+                        <span class="bg-black/30 text-[10px] uppercase font-extrabold px-2 py-1 rounded-full text-tiktokCyan tracking-wider border border-tiktokCyan/30">Trending Tag</span>
+                        <h3 class="text-xl font-black mt-1 text-white">#NeonVibesChallenge</h3>
+                        <p class="text-[11px] text-neutral-200 font-medium">Capture beautiful neon signs & city life for a chance to win features!</p>
+                    </div>
+                    <div class="absolute -right-4 -bottom-4 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+                </div>
+
+                <!-- Popular Hashtags & Grids -->
+                <div class="space-y-6 flex-1">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="flex items-center gap-2 font-bold text-sm tracking-wide">
+                                <span class="w-8 h-8 rounded-full bg-tiktokCyan/10 flex items-center justify-center text-tiktokCyan"><i class="ph ph-number-sign"></i></span>
+                                dancewave
+                            </span>
+                            <span class="text-xs text-neutral-400 font-medium hover:text-white cursor-pointer">9.2M ></span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="discover-card h-32 rounded-lg bg-neutral-800 overflow-hidden relative group cursor-pointer" onclick="playMockVideoAtIndex(0)">
+                                <img src="https://placehold.co/150x200/222/FE2C55?text=Dance1" class="w-full h-full object-cover group-hover:scale-105 duration-300" alt="dance">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-1.5"><span class="text-[9px] font-bold"><i class="ph ph-play"></i> 1.2M</span></div>
+                            </div>
+                            <div class="discover-card h-32 rounded-lg bg-neutral-800 overflow-hidden relative group cursor-pointer" onclick="playMockVideoAtIndex(1)">
+                                <img src="https://placehold.co/150x200/222/25F4EE?text=Dance2" class="w-full h-full object-cover group-hover:scale-105 duration-300" alt="dance">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-1.5"><span class="text-[9px] font-bold"><i class="ph ph-play"></i> 890K</span></div>
+                            </div>
+                            <div class="discover-card h-32 rounded-lg bg-neutral-800 overflow-hidden relative group cursor-pointer" onclick="playMockVideoAtIndex(2)">
+                                <img src="https://placehold.co/150x200/222/ffaa00?text=Dance3" class="w-full h-full object-cover group-hover:scale-105 duration-300" alt="dance">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-1.5"><span class="text-[9px] font-bold"><i class="ph ph-play"></i> 430K</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="flex items-center gap-2 font-bold text-sm tracking-wide">
+                                <span class="w-8 h-8 rounded-full bg-tiktokRed/10 flex items-center justify-center text-tiktokRed"><i class="ph ph-number-sign"></i></span>
+                                cookingtok
+                            </span>
+                            <span class="text-xs text-neutral-400 font-medium hover:text-white cursor-pointer">4.5M ></span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="discover-card h-32 rounded-lg bg-neutral-800 overflow-hidden relative group cursor-pointer" onclick="playMockVideoAtIndex(3)">
+                                <img src="https://placehold.co/150x200/222/00ffaa?text=Food1" class="w-full h-full object-cover group-hover:scale-105 duration-300" alt="cooking">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-1.5"><span class="text-[9px] font-bold"><i class="ph ph-play"></i> 2.1M</span></div>
+                            </div>
+                            <div class="discover-card h-32 rounded-lg bg-neutral-800 overflow-hidden relative group cursor-pointer" onclick="playMockVideoAtIndex(0)">
+                                <img src="https://placehold.co/150x200/222/a855f7?text=Food2" class="w-full h-full object-cover group-hover:scale-105 duration-300" alt="cooking">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-1.5"><span class="text-[9px] font-bold"><i class="ph ph-play"></i> 640K</span></div>
+                            </div>
+                            <div class="discover-card h-32 rounded-lg bg-neutral-800 overflow-hidden relative group cursor-pointer" onclick="playMockVideoAtIndex(1)">
+                                <img src="https://placehold.co/150x200/222/ef4444?text=Food3" class="w-full h-full object-cover group-hover:scale-105 duration-300" alt="cooking">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-1.5"><span class="text-[9px] font-bold"><i class="ph ph-play"></i> 1.1M</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 3: CREATE (CAMERA/STUDIO SIMULATOR) -->
+            <section id="page-create" class="page-view absolute inset-0 w-full h-full hidden bg-black flex flex-col justify-between p-6">
+                <!-- Top Actions -->
+                <div class="flex justify-between items-center z-20">
+                    <button class="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center backdrop-blur-md" onclick="switchTab('home')">
+                        <i class="ph ph-x text-lg"></i>
+                    </button>
+                    <button id="camera-flip-btn" class="flex flex-col items-center gap-1 bg-black/40 p-2 rounded-xl text-neutral-300 hover:text-white">
+                        <i class="ph ph-camera-rotate text-xl"></i>
+                        <span class="text-[10px]">Flip</span>
+                    </button>
+                </div>
+
+                <!-- Studio Interactive Preview Window -->
+                <div class="absolute inset-0 z-0 bg-neutral-900 flex flex-col justify-center items-center overflow-hidden">
+                    <!-- HTML5 live webcam stream simulator -->
+                    <video id="webcam-preview" autoplay playsinline muted class="w-full h-full object-cover hidden transition-all duration-300"></video>
+                    <!-- Fallback animation template if camera disabled or not granted -->
+                    <div id="camera-placeholder" class="text-center p-6 flex flex-col items-center gap-4">
+                        <div class="w-20 h-20 rounded-full bg-neutral-800 flex items-center justify-center border-2 border-dashed border-tiktokCyan/50 animate-pulse">
+                            <i class="ph ph-video-camera text-4xl text-tiktokCyan"></i>
+                        </div>
+                        <h4 class="font-bold text-white text-lg">Interactive Creator Studio</h4>
+                        <p class="text-xs text-neutral-400 max-w-xs leading-relaxed">Turn on webcam or use the dynamic custom canvas generator inside your browser to start filters!</p>
+                        <button id="grant-camera-btn" class="bg-tiktokCyan hover:bg-cyan-400 text-black font-extrabold text-xs tracking-wider uppercase px-5 py-2.5 rounded-full transition duration-300">
+                            Enable Camera Feed
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Side Interactive Styling Filters bar -->
+                <div class="absolute right-6 top-1/4 flex flex-col gap-5 z-20 bg-black/40 p-3 rounded-2xl backdrop-blur-md">
+                    <button onclick="setCameraFilter('none')" class="flex flex-col items-center text-xs text-neutral-300 hover:text-white">
+                        <div class="w-8 h-8 rounded-full border border-white flex items-center justify-center bg-gray-500">N</div>
+                        <span class="text-[10px] mt-1">Normal</span>
+                    </button>
+                    <button onclick="setCameraFilter('sepia(100%)')" class="flex flex-col items-center text-xs text-neutral-300 hover:text-white">
+                        <div class="w-8 h-8 rounded-full border border-white flex items-center justify-center bg-amber-700">S</div>
+                        <span class="text-[10px] mt-1">Retro</span>
+                    </button>
+                    <button onclick="setCameraFilter('hue-rotate(90deg) saturate(150%)')" class="flex flex-col items-center text-xs text-neutral-300 hover:text-white">
+                        <div class="w-8 h-8 rounded-full border border-white flex items-center justify-center bg-pink-700">C</div>
+                        <span class="text-[10px] mt-1">Cyber</span>
+                    </button>
+                    <button onclick="setCameraFilter('grayscale(100%)')" class="flex flex-col items-center text-xs text-neutral-300 hover:text-white">
+                        <div class="w-8 h-8 rounded-full border border-white flex items-center justify-center bg-zinc-600">B</div>
+                        <span class="text-[10px] mt-1">Mono</span>
+                    </button>
+                </div>
+
+                <!-- Bottom Recording Actions -->
+                <div class="z-20 w-full flex flex-col gap-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-10 pb-4">
+                    <!-- Filters/Effects selection ticker scrollbar -->
+                    <div class="flex justify-center gap-6 text-sm font-semibold tracking-wider text-neutral-400">
+                        <span class="active text-white border-b-2 border-white pb-1">15s</span>
+                        <span>60s</span>
+                        <span>Templates</span>
+                    </div>
+
+                    <!-- Record Ring & Interactive triggers -->
+                    <div class="flex justify-between items-center px-10">
+                        <button class="flex flex-col items-center gap-1" onclick="showToast('Effects palette loaded')">
+                            <div class="w-10 h-10 rounded-lg bg-yellow-500/80 border-2 border-white overflow-hidden flex items-center justify-center"><i class="ph ph-sparkles text-lg text-white"></i></div>
+                            <span class="text-[11px] text-neutral-300">Effects</span>
+                        </button>
+
+                        <!-- Main Recording Inner Trigger Button -->
+                        <div class="relative flex items-center justify-center">
+                            <button id="record-trigger-btn" class="w-20 h-20 rounded-full border-4 border-white p-1 bg-transparent flex items-center justify-center group duration-300 active:scale-95">
+                                <div id="record-btn-core" class="w-full h-full rounded-full bg-tiktokRed transition-all duration-300"></div>
+                            </button>
+                            <!-- Animated processing spinner during active recording simulation -->
+                            <div id="recording-progress-svg" class="absolute inset-0 pointer-events-none hidden">
+                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="44" stroke="rgba(254, 44, 85, 0.4)" stroke-width="4" fill="transparent"/>
+                                    <circle id="recording-progress-circle" cx="50" cy="50" r="44" stroke="#25F4EE" stroke-width="4" fill="transparent" stroke-dasharray="276.4" stroke-dashoffset="276.4"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <button id="upload-simulator-btn" class="flex flex-col items-center gap-1">
+                            <div class="w-10 h-10 rounded-lg bg-neutral-800 border-2 border-neutral-700 flex items-center justify-center hover:bg-neutral-700"><i class="ph ph-upload-simple text-lg"></i></div>
+                            <span class="text-[11px] text-neutral-300">Upload</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 4: INBOX & DIRECT CHAT SYSTEM -->
+            <section id="page-inbox" class="page-view absolute inset-0 w-full h-full hidden bg-tiktokDark flex flex-col">
+                <div class="flex justify-between items-center px-4 py-4 border-b border-neutral-800">
+                    <h2 class="text-lg font-extrabold tracking-wide">All Activity</h2>
+                    <button class="w-8 h-8 bg-neutral-800 rounded-full flex items-center justify-center hover:bg-neutral-700"><i class="ph ph-paper-plane text-lg"></i></button>
+                </div>
+
+                <!-- Chat Lists Scroll Container -->
+                <div class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
+                    <!-- Direct Messaging Quick Row -->
+                    <div>
+                        <span class="text-xs uppercase font-extrabold text-neutral-400 tracking-wider">Direct Messages</span>
+                        <div class="flex gap-4 mt-3 overflow-x-auto pb-2 no-scrollbar">
+                            <div class="flex flex-col items-center shrink-0 cursor-pointer" onclick="openDirectMessage('@alex_dancer')">
+                                <div class="relative">
+                                    <img src="https://placehold.co/100x100/FE2C55/fff?text=AD" class="w-14 h-14 rounded-full border-2 border-tiktokRed object-cover" alt="avatar">
+                                    <span class="absolute bottom-0 right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-tiktokDark"></span>
+                                </div>
+                                <span class="text-[11px] text-neutral-300 mt-1">@alex_dancer</span>
+                            </div>
+                            <div class="flex flex-col items-center shrink-0 cursor-pointer" onclick="openDirectMessage('@chef_marcus')">
+                                <div class="relative">
+                                    <img src="https://placehold.co/100x100/25F4EE/000?text=CM" class="w-14 h-14 rounded-full border-2 border-tiktokCyan object-cover" alt="avatar">
+                                    <span class="absolute bottom-0 right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-tiktokDark"></span>
+                                </div>
+                                <span class="text-[11px] text-neutral-300 mt-1">@chef_marcus</span>
+                            </div>
+                            <div class="flex flex-col items-center shrink-0 cursor-pointer" onclick="openDirectMessage('@neon_dreams')">
+                                <img src="https://placehold.co/100x100/422/fff?text=ND" class="w-14 h-14 rounded-full border border-neutral-700 object-cover" alt="avatar">
+                                <span class="text-[11px] text-neutral-300 mt-1">@neon_dreams</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notification Streams -->
+                    <div class="pt-2">
+                        <span class="text-xs uppercase font-extrabold text-neutral-400 tracking-wider">Notifications</span>
+                        <div class="space-y-4 mt-3">
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-tiktokGray/30 hover:bg-tiktokGray/50 transition">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-full bg-tiktokCyan/10 flex items-center justify-center text-tiktokCyan"><i class="ph ph-heart-straight text-xl"></i></div>
+                                    <div>
+                                        <h5 class="text-xs font-bold">@sarah_skates and 12 others</h5>
+                                        <p class="text-[10px] text-neutral-400">liked your post. <span class="text-neutral-500">2h ago</span></p>
+                                    </div>
+                                </div>
+                                <div class="w-10 h-10 bg-neutral-800 rounded-md overflow-hidden"><img src="https://placehold.co/50x50/333/fff?text=vid" class="w-full h-full object-cover"></div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-tiktokGray/30 hover:bg-tiktokGray/50 transition">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-full bg-tiktokRed/10 flex items-center justify-center text-tiktokRed"><i class="ph ph-chat-centered-dots text-xl"></i></div>
+                                    <div>
+                                        <h5 class="text-xs font-bold">@retro_lens</h5>
+                                        <p class="text-[10px] text-neutral-400">commented: "Incredible shot!..." <span class="text-neutral-500">4h ago</span></p>
+                                    </div>
+                                </div>
+                                <div class="w-10 h-10 bg-neutral-800 rounded-md overflow-hidden"><img src="https://placehold.co/50x50/333/fff?text=vid" class="w-full h-full object-cover"></div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-2 rounded-xl bg-tiktokGray/30 hover:bg-tiktokGray/50 transition">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500"><i class="ph ph-user-plus text-xl"></i></div>
+                                    <div>
+                                        <h5 class="text-xs font-bold">@tok_academy</h5>
+                                        <p class="text-[10px] text-neutral-400">started following you. <span class="text-neutral-500">1d ago</span></p>
+                                    </div>
+                                </div>
+                                <button class="bg-tiktokRed text-white text-[11px] font-bold px-3 py-1.5 rounded-full hover:bg-rose-600 transition">Follow Back</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Chat View Panel Overlay (Triggered by dynamic chat tap) -->
+                <div id="dm-box" class="absolute inset-y-0 right-0 w-full bg-tiktokDark z-50 transform translate-x-full transition-all duration-300 flex flex-col">
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-neutral-800">
+                        <div class="flex items-center gap-3">
+                            <button onclick="closeDirectMessage()" class="text-neutral-400 hover:text-white"><i class="ph ph-caret-left text-2xl"></i></button>
+                            <div>
+                                <h4 id="dm-username" class="font-bold text-sm">@alex_dancer</h4>
+                                <span class="text-[10px] text-green-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block"></span> Active now</span>
+                            </div>
+                        </div>
+                        <i class="ph ph-phone text-lg hover:text-tiktokCyan cursor-pointer"></i>
+                    </div>
+                    <!-- Conversation Thread scroll -->
+                    <div id="dm-thread" class="flex-1 overflow-y-auto p-4 space-y-4">
+                        <div class="flex flex-col gap-1 items-start">
+                            <div class="bg-tiktokGray text-white text-xs px-3 py-2 rounded-2xl max-w-xs rounded-tl-none">Hey, absolutely loved your latest visual composition! 🔥</div>
+                            <span class="text-[8px] text-neutral-500 px-1">Yesterday 18:32</span>
+                        </div>
+                        <div class="flex flex-col gap-1 items-end">
+                            <div class="bg-tiktokRed text-white text-xs px-3 py-2 rounded-2xl max-w-xs rounded-tr-none">Appreciate the feedback, Alex! More uploads coming tonight! 🕺🏼</div>
+                            <span class="text-[8px] text-neutral-500 px-1">Yesterday 18:45</span>
+                        </div>
+                    </div>
+                    <!-- DM Input Bar -->
+                    <div class="p-3 bg-neutral-900 border-t border-neutral-800 flex items-center gap-2">
+                        <input id="dm-text-input" type="text" placeholder="Send a message..." class="bg-tiktokGray/60 rounded-full px-4 py-2 text-xs w-full outline-none focus:ring-1 focus:ring-tiktokRed border-none text-white">
+                        <button onclick="sendDirectMessage()" class="w-8 h-8 rounded-full bg-tiktokRed text-white flex items-center justify-center shrink-0 hover:bg-rose-600 transition"><i class="ph ph-paper-plane text-xs"></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 5: USER PROFILE VIEW -->
+            <section id="page-profile" class="page-view absolute inset-0 w-full h-full hidden bg-tiktokDark flex flex-col overflow-y-auto no-scrollbar">
+                <!-- Profile Header Details -->
+                <div class="flex justify-between items-center px-6 pt-5 pb-3">
+                    <i class="ph ph-user-plus text-xl hover:text-white cursor-pointer"></i>
+                    <h3 class="font-bold text-sm tracking-wide">TokUser_99</h3>
+                    <i class="ph ph-list text-xl hover:text-white cursor-pointer" onclick="showToast('Settings & Analytics Loaded')"></i>
+                </div>
+
+                <div class="flex flex-col items-center px-6 pb-6">
+                    <div class="relative group">
+                        <img src="https://placehold.co/150x150/111/fff?text=Me" class="w-24 h-24 rounded-full border-2 border-neutral-800 shadow-xl object-cover" alt="user avatar">
+                        <button class="absolute bottom-1 right-1 w-6 h-6 bg-tiktokRed border-2 border-tiktokDark rounded-full flex items-center justify-center text-xs" onclick="showToast('Change profile image clicked')"><i class="ph ph-camera"></i></button>
+                    </div>
+
+                    <h4 class="font-bold text-base mt-3">@tokuser_creative</h4>
+                    <span class="text-[11px] text-neutral-400 font-medium">✨ Visual Artist & Web Designer ✨</span>
+
+                    <!-- Subscriber metrics segment -->
+                    <div class="flex gap-6 mt-4 py-1">
+                        <div class="text-center">
+                            <span class="font-bold text-sm">124</span>
+                            <span class="text-[10px] text-neutral-400 block">Following</span>
+                        </div>
+                        <div class="text-center border-x border-neutral-800 px-6">
+                            <span class="font-bold text-sm">4.8K</span>
+                            <span class="text-[10px] text-neutral-400 block">Followers</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="font-bold text-sm">36.5K</span>
+                            <span class="text-[10px] text-neutral-400 block">Likes</span>
+                        </div>
+                    </div>
+
+                    <!-- Profile Edit CTA Call -->
+                    <div class="flex gap-2 w-full mt-4">
+                        <button class="flex-1 bg-tiktokGray hover:bg-neutral-800 text-white font-bold text-xs py-2 rounded-lg transition" onclick="showToast('Edit profile menu simulated')">Edit Profile</button>
+                        <button class="w-10 bg-tiktokGray hover:bg-neutral-800 text-white flex items-center justify-center rounded-lg transition" onclick="showToast('Bookmark board opened')"><i class="ph ph-bookmark-simple"></i></button>
+                    </div>
+
+                    <!-- Bio -->
+                    <p class="text-xs text-neutral-300 text-center mt-4 max-w-xs leading-relaxed">
+                        Chasing high frame rates and beautiful colors. Tap links below to browse portfolio. 🚀
+                    </p>
+                </div>
+
+                <!-- Media Tabs (Self-uploaded vs Liked clips) -->
+                <div class="sticky top-0 bg-tiktokDark z-20 flex border-t border-b border-neutral-800">
+                    <button class="flex-1 py-3 text-center border-b-2 border-white flex justify-center items-center text-lg"><i class="ph ph-squares-four"></i></button>
+                    <button class="flex-1 py-3 text-center text-neutral-500 hover:text-white flex justify-center items-center text-lg"><i class="ph ph-heart-straight"></i></button>
+                    <button class="flex-1 py-3 text-center text-neutral-500 hover:text-white flex justify-center items-center text-lg"><i class="ph ph-lock"></i></button>
+                </div>
+
+                <!-- Video Gallery Grid -->
+                <div id="profile-video-grid" class="grid grid-cols-3 gap-0.5 p-0.5 bg-neutral-900">
+                    <!-- Cards will render here -->
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Overlay Drawer: Comments -->
+        <div id="comments-drawer" class="absolute inset-y-0 right-0 left-0 top-[30%] bg-neutral-900/95 border-t border-neutral-800 rounded-t-3xl transform translate-y-full transition-all duration-300 z-50 flex flex-col">
+            <div class="flex justify-between items-center px-5 py-3 border-b border-neutral-800">
+                <span id="comments-title-count" class="text-xs font-bold tracking-wide">3 comments</span>
+                <button onclick="closeComments()" class="text-neutral-400 hover:text-white"><i class="ph ph-x text-lg"></i></button>
+            </div>
+            
+            <!-- Dynamic comments wrapper -->
+            <div id="comments-scroll-area" class="flex-1 overflow-y-auto px-5 py-4 space-y-4 no-scrollbar">
+                <!-- Dynamically populated comments -->
+            </div>
+
+            <!-- Comment Input footer -->
+            <div class="p-3 bg-neutral-950 border-t border-neutral-800 flex items-center gap-3">
+                <img src="https://placehold.co/100x100/111/fff?text=Me" class="w-8 h-8 rounded-full border border-neutral-700 object-cover" alt="my profile avatar">
+                <input id="new-comment-input" type="text" placeholder="Add comment..." class="bg-tiktokGray rounded-full px-4 py-2 text-xs w-full outline-none focus:ring-1 focus:ring-tiktokRed border-none text-white">
+                <button onclick="postComment()" class="text-tiktokCyan hover:text-cyan-400 font-bold text-xs shrink-0 px-2">Post</button>
+            </div>
+        </div>
+
+        <!-- Overlay Drawer: Share panel -->
+        <div id="share-drawer" class="absolute bottom-0 inset-x-0 bg-neutral-900/95 border-t border-neutral-800 rounded-t-3xl transform translate-y-full transition-all duration-300 z-50 p-5 flex flex-col gap-4">
+            <div class="flex justify-between items-center">
+                <span class="text-xs font-bold tracking-wide">Send to</span>
+                <button onclick="closeShare()" class="text-neutral-400 hover:text-white"><i class="ph ph-x text-lg"></i></button>
+            </div>
+            <!-- Quick share links horizontal list -->
+            <div class="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+                <div class="flex flex-col items-center shrink-0" onclick="performShareAction('Direct Message')">
+                    <div class="w-12 h-12 rounded-full bg-tiktokRed flex items-center justify-center text-white text-xl"><i class="ph ph-paper-plane-tilt"></i></div>
+                    <span class="text-[10px] text-neutral-300 mt-1">Direct Message</span>
+                </div>
+                <div class="flex flex-col items-center shrink-0" onclick="performShareAction('WhatsApp')">
+                    <div class="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center text-white text-xl"><i class="ph ph-whatsapp-logo"></i></div>
+                    <span class="text-[10px] text-neutral-300 mt-1">WhatsApp</span>
+                </div>
+                <div class="flex flex-col items-center shrink-0" onclick="performShareAction('Instagram')">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 flex items-center justify-center text-white text-xl"><i class="ph ph-instagram-logo"></i></div>
+                    <span class="text-[10px] text-neutral-300 mt-1">Stories</span>
+                </div>
+                <div class="flex flex-col items-center shrink-0" onclick="copyVideoLink()">
+                    <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl"><i class="ph ph-link"></i></div>
+                    <span class="text-[10px] text-neutral-300 mt-1">Copy Link</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM GLOBAL NAVIGATION BAR -->
+        <nav class="bg-black border-t border-neutral-900 px-6 py-2 flex justify-between items-center z-40 shrink-0">
+            <button onclick="switchTab('home')" class="nav-tab flex flex-col items-center gap-1 active text-white" data-target="home">
+                <i class="ph ph-house text-xl"></i>
+                <span class="text-[9px] font-bold">Home</span>
+            </button>
+            <button onclick="switchTab('discover')" class="nav-tab flex flex-col items-center gap-1 text-neutral-400 hover:text-white" data-target="discover">
+                <i class="ph ph-compass text-xl"></i>
+                <span class="text-[9px] font-bold">Discover</span>
+            </button>
+            
+            <!-- TikTok dynamic record button styling with cyan/red overlay highlights -->
+            <button onclick="switchTab('create')" class="nav-tab relative flex items-center justify-center h-8 w-11 hover:scale-105 duration-200" data-target="create">
+                <span class="absolute left-[-2px] w-full h-full bg-tiktokCyan rounded-md"></span>
+                <span class="absolute right-[-2px] w-full h-full bg-tiktokRed rounded-md"></span>
+                <span class="absolute inset-0 bg-white rounded-md flex items-center justify-center text-black font-extrabold text-lg"><i class="ph ph-plus"></i></span>
+            </button>
+
+            <button onclick="switchTab('inbox')" class="nav-tab flex flex-col items-center gap-1 text-neutral-400 hover:text-white" data-target="inbox">
+                <i class="ph ph-chat-centered-text text-xl"></i>
+                <span class="text-[9px] font-bold">Inbox</span>
+            </button>
+            <button onclick="switchTab('profile')" class="nav-tab flex flex-col items-center gap-1 text-neutral-400 hover:text-white" data-target="profile">
+                <i class="ph ph-user text-xl"></i>
+                <span class="text-[9px] font-bold">Profile</span>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        
+        // Comprehensive video sample catalog (high quality direct links)
+        const videosData = [
+            {
+                id: 1,
+                url: "https://assets.mixkit.co/videos/preview/mixkit-skater-doing-tricks-at-sunset-24151-large.mp4",
+                author: "@skate_pro",
+                caption: "Cruising into the sunset. Golden hour vibes hit different 🌅🛹 #skater #sunset #skatelife #vibes",
+                music: "Golden State Chillout - Lofi Beats",
+                likes: "128.4K",
+                comments: [
+                    { user: "@carla_j", text: "That drop-in was buttery smooth!" },
+                    { user: "@chillwave", text: "The golden hour colors are insane" },
+                    { user: "@skate_hub", text: "Absolute legend" }
+                ],
+                shares: "12.5K",
+                liked: false,
+                cover: "https://placehold.co/400x600/111/fff?text=Skate+Sunset"
+            },
+            {
+                id: 2,
+                url: "https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-in-the-rain-39837-large.mp4",
+                author: "@neon_dreams",
+                caption: "Walking under the bright neon lights in the pouring rain 🌌✨ #cyberpunk #neon #rainyday #aesthetic",
+                music: "Synthwave Horizon - Nightrider",
+                likes: "240.1K",
+                comments: [
+                    { user: "@cyber_dude", text: "This looks straight out of Blade Runner!" },
+                    { user: "@rainy_dayz", text: "What camera lens did you use? This is so crisp" },
+                    { user: "@sound_storm", text: "This soundtrack fits beautifully." }
+                ],
+                shares: "48.2K",
+                liked: false,
+                cover: "https://placehold.co/400x600/111/fff?text=Neon+Rain"
+            },
+            {
+                id: 3,
+                url: "https://assets.mixkit.co/videos/preview/mixkit-man-dancing-under-neon-lights-42218-large.mp4",
+                author: "@dance_wave",
+                caption: "Expressing rhythm under bright glowing lights 🕺⚡ #dancechallenge #streetstyle #neonlights",
+                music: "Midnight Grooves - Bassline Collective",
+                likes: "94.2K",
+                comments: [
+                    { user: "@beat_head", text: "That footwork is mindblowing!" },
+                    { user: "@flow_artist", text: "Smashed this challenge completely" }
+                ],
+                shares: "5.1K",
+                liked: false,
+                cover: "https://placehold.co/400x600/111/fff?text=Dance+Lights"
+            }
+        ];
+
+        let activeVideoIndex = 0;
+        let isMuted = false;
+        let activeCommentsVideoId = null;
+        let webcamStream = null;
+        let isRecording = false;
+        let recordingTimer = null;
+
+
+        // Dynamic feed builder rendering individual video containers
+        function renderVideoFeed() {
+            const feedContainer = document.getElementById('video-feed-container');
+            feedContainer.innerHTML = '';
+
+            videosData.forEach((video, index) => {
+                const isActive = index === activeVideoIndex;
+                const activeClass = isActive ? 'opacity-100 flex' : 'opacity-0 hidden';
+
+                const cardHTML = `
+                    <div class="video-card absolute inset-0 w-full h-full flex flex-col justify-between transition-all duration-300 bg-black ${activeClass}" data-index="${index}">
+                        
+                        <!-- Main Video Element supporting double tap to like & standard single click play/pause -->
+                        <div class="absolute inset-0 z-0 flex items-center justify-center" onclick="handleVideoTap(${index}, event)">
+                            <video id="video-el-${index}" class="w-full h-full object-cover" loop playsinline ${isActive ? 'autoplay' : ''} ${isMuted ? 'muted' : ''}>
+                                <source src="${video.url}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                            
+                            <!-- Custom play button indicator over overlay -->
+                            <div id="play-overlay-${index}" class="absolute scale-150 opacity-0 pointer-events-none transition duration-300 z-30">
+                                <i class="ph ph-play-fill text-6xl text-white"></i>
+                            </div>
+                        </div>
+
+                        <!-- Top gradient element for clean navigation background -->
+                        <div class="absolute top-0 inset-x-0 h-28 bg-gradient-to-b from-black/80 to-transparent pointer-events-none z-10"></div>
+
+                        <!-- Bottom Text Info & Interaction elements -->
+                        <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 z-20 flex justify-between items-end pb-6">
+                            
+                            <!-- Creator Metadata Left Side -->
+                            <div class="max-w-[70%] text-white flex flex-col gap-2">
+                                <span class="font-extrabold text-sm flex items-center gap-1 cursor-pointer" onclick="showProfileOf('${video.author}')">
+                                    ${video.author}
+                                    <span class="w-3.5 h-3.5 rounded-full bg-tiktokCyan flex items-center justify-center text-[8px] text-black"><i class="ph ph-check-bold"></i></span>
+                                </span>
+                                <p class="text-xs font-normal leading-relaxed text-neutral-200 line-clamp-3">${video.caption}</p>
+                                
+                                <!-- Rolling Music Ticker sound simulation -->
+                                <div class="flex items-center gap-1 bg-black/40 px-2 py-1.5 rounded-full max-w-fit mt-1 border border-neutral-800/60 overflow-hidden">
+                                    <i class="ph ph-music-notes text-xs text-tiktokCyan animate-pulse"></i>
+                                    <div class="text-[10px] whitespace-nowrap overflow-hidden text-neutral-300">
+                                        <span class="inline-block animate-marquee">${video.music}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Floating Action Buttons Right Side -->
+                            <div class="flex flex-col items-center gap-4 text-white z-30">
+                                
+                                <!-- Profile Anchor Circle -->
+                                <div class="relative mb-2 cursor-pointer" onclick="showProfileOf('${video.author}')">
+                                    <img src="https://placehold.co/100x100/FE2C55/fff?text=${video.author.substring(1,3).toUpperCase()}" class="w-10 h-10 rounded-full border border-white object-cover" alt="author">
+                                    <span class="absolute bottom-[-6px] left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full bg-tiktokRed flex items-center justify-center text-[10px] text-white hover:scale-110 duration-200"><i class="ph ph-plus-bold"></i></span>
+                                </div>
+
+                                <!-- Likes Button -->
+                                <button onclick="toggleLike(${index}, event)" class="flex flex-col items-center gap-1 group">
+                                    <div class="w-11 h-11 rounded-full bg-black/40 flex items-center justify-center hover:bg-neutral-800/60 backdrop-blur-md transition-all duration-300 border border-neutral-800">
+                                        <i id="like-icon-${index}" class="ph ph-heart-straight-fill text-2xl transition duration-300 ${video.liked ? 'text-tiktokRed scale-110' : 'text-white'}"></i>
+                                    </div>
+                                    <span id="like-count-${index}" class="text-[10px] font-bold text-neutral-300">${video.likes}</span>
+                                </button>
+
+                                <!-- Comments Button Drawer Opener -->
+                                <button onclick="openComments(${video.id}, event)" class="flex flex-col items-center gap-1">
+                                    <div class="w-11 h-11 rounded-full bg-black/40 flex items-center justify-center hover:bg-neutral-800/60 backdrop-blur-md transition-all duration-300 border border-neutral-800">
+                                        <i class="ph ph-chat-centered-dots-fill text-2xl text-white"></i>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-neutral-300">${video.comments.length}</span>
+                                </button>
+
+                                <!-- Share Button Trigger -->
+                                <button onclick="openShare(event)" class="flex flex-col items-center gap-1">
+                                    <div class="w-11 h-11 rounded-full bg-black/40 flex items-center justify-center hover:bg-neutral-800/60 backdrop-blur-md transition-all duration-300 border border-neutral-800">
+                                        <i class="ph ph-share-fat-fill text-2xl text-white"></i>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-neutral-300">${video.shares}</span>
+                                </button>
+
+                                <!-- Vinyl Record Spinning sound icon -->
+                                <div class="w-9 h-9 bg-black/60 rounded-full border border-neutral-800 flex items-center justify-center animate-spin-slow">
+                                    <img src="https://placehold.co/100x100/222/FE2C55?text=Disc" class="w-6 h-6 rounded-full" alt="disc">
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Progress indicator line running at bottom of video -->
+                        <div class="absolute bottom-[2px] left-0 right-0 h-1 bg-neutral-800 z-30 pointer-events-none">
+                            <div id="video-progress-${index}" class="video-progress-bar h-full bg-tiktokCyan" style="width: 0%"></div>
+                        </div>
+
+                    </div>
+                `;
+                feedContainer.insertAdjacentHTML('beforeend', cardHTML);
+                setupVideoProgressTracker(index);
+            });
+        }
+
+
+        // Continuous progress observer for running bars
+        function setupVideoProgressTracker(index) {
+            const video = document.getElementById(`video-el-${index}`);
+            const bar = document.getElementById(`video-progress-${index}`);
+            
+            if (video && bar) {
+                video.addEventListener('timeupdate', () => {
+                    if (video.duration) {
+                        const progress = (video.currentTime / video.duration) * 100;
+                        bar.style.width = `${progress}%`;
+                    }
+                });
+            }
+        }
+
+        // Taps trigger Play / Pause action
+        let lastTapTime = 0;
+        function handleVideoTap(index, event) {
+            const currentTime = new Date().getTime();
+            const tapDelay = 250;
+            
+            if (currentTime - lastTapTime < tapDelay) {
+                // Double tap caught -> Like action
+                triggerDoubleTapLike(index, event);
+            } else {
+                // Single tap caught -> Play / Pause trigger
+                togglePlayPause(index);
+            }
+            lastTapTime = currentTime;
+        }
+
+        function togglePlayPause(index) {
+            const video = document.getElementById(`video-el-${index}`);
+            const playOverlay = document.getElementById(`play-overlay-${index}`);
+            if (!video) return;
+
+            if (video.paused) {
+                video.play().catch(e => console.log('Autoplay deferred'));
+                playOverlay.classList.remove('opacity-100');
+                playOverlay.classList.add('opacity-0');
+            } else {
+                video.pause();
+                playOverlay.classList.remove('opacity-0');
+                playOverlay.classList.add('opacity-100');
+            }
+        }
+
+        // Like triggers double tap glowing hearts on exact tapped coordinates
+        function triggerDoubleTapLike(index, event) {
+            const container = event.currentTarget;
+            const rect = container.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            // Generate temporary absolute SVG heart
+            const heart = document.createElement('div');
+            heart.className = 'absolute heart-pop-animation z-40 pointer-events-none text-tiktokRed text-6xl drop-shadow-[0_4px_12px_rgba(254,44,85,0.6)]';
+            heart.style.left = `${x - 30}px`;
+            heart.style.top = `${y - 30}px`;
+            heart.innerHTML = `<i class="ph-heart-straight-fill"></i>`;
+            container.appendChild(heart);
+
+            setTimeout(() => {
+                heart.remove();
+            }, 800);
+
+            // Increment like system state if not already liked
+            const video = videosData[index];
+            if (!video.liked) {
+                video.liked = true;
+                updateLikeUI(index);
+                showToast("Liked!");
+            }
+        }
+
+        function toggleLike(index, event) {
+            event.stopPropagation();
+            const video = videosData[index];
+            video.liked = !video.liked;
+            updateLikeUI(index);
+        }
+
+        function updateLikeUI(index) {
+            const video = videosData[index];
+            const likeIcon = document.getElementById(`like-icon-${index}`);
+            const countLabel = document.getElementById(`like-count-${index}`);
+
+            if (video.liked) {
+                likeIcon.classList.remove('text-white');
+                likeIcon.classList.add('text-tiktokRed', 'scale-110');
+                countLabel.innerText = "128.5K"; // mock update
+            } else {
+                likeIcon.classList.remove('text-tiktokRed', 'scale-110');
+                likeIcon.classList.add('text-white');
+                countLabel.innerText = video.likes;
+            }
+        }
+
+
+        // Vertical touch gesture tracking for navigating feed
+        let startY = 0;
+        const feedContainer = document.getElementById('video-feed-container');
+
+        feedContainer.addEventListener('touchstart', e => {
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+
+        feedContainer.addEventListener('touchend', e => {
+            const endY = e.changedTouches[0].clientY;
+            const deltaY = startY - endY;
+            const minSwipeDistance = 50;
+
+            if (Math.abs(deltaY) > minSwipeDistance) {
+                if (deltaY > 0) {
+                    // Swiped UP -> Go down/next video
+                    changeActiveVideo(1);
+                } else {
+                    // Swiped DOWN -> Go up/previous video
+                    changeActiveVideo(-1);
+                }
+            }
+        }, { passive: true });
+
+        // Mouse wheel fallbacks for desktop scroll mock
+        feedContainer.addEventListener('wheel', e => {
+            e.preventDefault();
+            if (e.deltaY > 0) {
+                changeActiveVideo(1);
+            } else {
+                changeActiveVideo(-1);
+            }
+        }, { passive: false });
+
+        function changeActiveVideo(direction) {
+            // Stop current video
+            const currentVideo = document.getElementById(`video-el-${activeVideoIndex}`);
+            if (currentVideo) currentVideo.pause();
+
+            activeVideoIndex += direction;
+            if (activeVideoIndex < 0) activeVideoIndex = 0;
+            if (activeVideoIndex >= videosData.length) activeVideoIndex = videosData.length - 1;
+
+            // Render/Display updates
+            document.querySelectorAll('.video-card').forEach((card, idx) => {
+                if (idx === activeVideoIndex) {
+                    card.classList.remove('opacity-0', 'hidden');
+                    card.classList.add('opacity-100', 'flex');
+                    const newVideo = document.getElementById(`video-el-${idx}`);
+                    if (newVideo) {
+                        newVideo.currentTime = 0;
+                        newVideo.play().catch(err => console.log('Autoplay wait'));
+                    }
+                } else {
+                    card.classList.add('opacity-0', 'hidden');
+                    card.classList.remove('opacity-100', 'flex');
+                }
+            });
+        }
+
+
+        function openComments(videoId, event) {
+            if (event) event.stopPropagation();
+            activeCommentsVideoId = videoId;
+            const video = videosData.find(v => v.id === videoId);
+            if (!video) return;
+
+            // Header state updates
+            document.getElementById('comments-title-count').innerText = `${video.comments.length} comments`;
+            
+            // Draw comment stack
+            const list = document.getElementById('comments-scroll-area');
+            list.innerHTML = '';
+            
+            video.comments.forEach(c => {
+                const item = `
+                    <div class="flex gap-3">
+                        <img src="https://placehold.co/100x100/111/fff?text=${c.user.substring(1,3).toUpperCase()}" class="w-8 h-8 rounded-full border border-neutral-800 object-cover" alt="user avatar">
+                        <div class="flex-1">
+                            <h6 class="text-xs font-bold text-neutral-300">${c.user} <span class="text-[9px] text-neutral-500 font-normal">2h ago</span></h6>
+                            <p class="text-xs text-neutral-100 mt-0.5 leading-relaxed">${c.text}</p>
+                        </div>
+                    </div>
+                `;
+                list.insertAdjacentHTML('beforeend', item);
+            });
+
+            document.getElementById('comments-drawer').classList.remove('translate-y-full');
+        }
+
+        function closeComments() {
+            document.getElementById('comments-drawer').classList.add('translate-y-full');
+        }
+
+        function postComment() {
+            const input = document.getElementById('new-comment-input');
+            const commentText = input.value.trim();
+            if (!commentText || !activeCommentsVideoId) return;
+
+            const video = videosData.find(v => v.id === activeCommentsVideoId);
+            if (video) {
+                video.comments.push({
+                    user: "@tokuser_creative",
+                    text: commentText
+                });
+                input.value = '';
+                openComments(activeCommentsVideoId); // refresh
+                showToast("Comment posted!");
+            }
+        }
+
+
+        function openShare(event) {
+            if (event) event.stopPropagation();
+            document.getElementById('share-drawer').classList.remove('translate-y-full');
+        }
+
+        function closeShare() {
+            document.getElementById('share-drawer').classList.add('translate-y-full');
+        }
+
+        function performShareAction(platform) {
+            closeShare();
+            showToast(`Shared video to ${platform}!`);
+        }
+
+        function copyVideoLink() {
+            closeShare();
+            // Fallback clipboard command
+            const dummy = document.createElement('input');
+            dummy.value = window.location.href;
+            document.body.appendChild(dummy);
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            showToast("Video URL copied to clipboard!");
+        }
+
+
+        function switchTab(targetTab) {
+            // Manage UI views
+            document.querySelectorAll('.page-view').forEach(view => {
+                view.classList.add('hidden');
+                view.classList.remove('active');
+            });
+
+            const activeView = document.getElementById(`page-create`);
+            
+            // Handle active video playback on navigation
+            const activeVideo = document.getElementById(`video-el-${activeVideoIndex}`);
+            if (targetTab === 'home') {
+                document.getElementById('page-home').classList.remove('hidden');
+                document.getElementById('page-home').classList.add('active');
+                if (activeVideo) activeVideo.play().catch(err => {});
+            } else {
+                if (activeVideo) activeVideo.pause();
+            }
+
+            if (targetTab === 'discover') {
+                document.getElementById('page-discover').classList.remove('hidden');
+            }
+
+            if (targetTab === 'create') {
+                document.getElementById('page-create').classList.remove('hidden');
+                // Auto trigger camera preview when tab activates
+                initWebcam();
+            } else {
+                stopWebcam();
+            }
+
+            if (targetTab === 'inbox') {
+                document.getElementById('page-inbox').classList.remove('hidden');
+            }
+
+            if (targetTab === 'profile') {
+                document.getElementById('page-profile').classList.remove('hidden');
+                renderProfileGrid();
+            }
+
+            // Adjust navigation highlighting
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                if (tab.getAttribute('data-target') === targetTab) {
+                    tab.classList.add('text-white');
+                    tab.classList.remove('text-neutral-400');
+                } else {
+                    tab.classList.remove('text-white');
+                    tab.classList.add('text-neutral-400');
+                }
+            });
+        }
+
+        function showProfileOf(username) {
+            switchTab('profile');
+            showToast(`Browsing ${username}'s portfolio`);
+        }
+
+
+        function renderProfileGrid() {
+            const grid = document.getElementById('profile-video-grid');
+            grid.innerHTML = '';
+
+            // User's catalog mock videos
+            const mockUploads = [
+                { title: 'Aesthetic Rain', plays: '10.5K', color: 'bg-indigo-900', img: 'https://placehold.co/150x200/400x600/111/fff?text=Rain' },
+                { title: 'Synthwave', plays: '4.2K', color: 'bg-rose-950', img: 'https://placehold.co/150x200/400x600/111/fff?text=Synth' },
+                { title: 'Dance Vibes', plays: '98K', color: 'bg-amber-950', img: 'https://placehold.co/150x200/400x600/111/fff?text=Dance' },
+            ];
+
+            mockUploads.forEach((upload, index) => {
+                const element = `
+                    <div class="h-32 bg-neutral-800 border-r border-b border-neutral-900 overflow-hidden relative group cursor-pointer" onclick="showToast('Playing visual loop')">
+                        <img src="${upload.img}" class="w-full h-full object-cover group-hover:scale-105 duration-300" alt="profile video">
+                        <div class="absolute bottom-1 left-2 flex items-center gap-1 text-[10px] text-white">
+                            <i class="ph ph-play-fill"></i>
+                            <span class="font-bold">${upload.plays}</span>
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', element);
+            });
+        }
+
+
+        async function initWebcam() {
+            const videoElement = document.getElementById('webcam-preview');
+            const placeholder = document.getElementById('camera-placeholder');
+            
+            try {
+                webcamStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' },
+                    audio: false
+                });
+                videoElement.srcObject = webcamStream;
+                videoElement.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            } catch (err) {
+                console.warn('Webcam access was not granted.', err);
+                videoElement.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+        }
+
+        function stopWebcam() {
+            if (webcamStream) {
+                webcamStream.getTracks().forEach(track => track.stop());
+                webcamStream = null;
+            }
+            const videoElement = document.getElementById('webcam-preview');
+            if (videoElement) {
+                videoElement.srcObject = null;
+                videoElement.classList.add('hidden');
+            }
+            document.getElementById('camera-placeholder').classList.remove('hidden');
+        }
+
+        // Apply real-time high-fidelity CSS canvas styling filter over standard media
+        function setCameraFilter(filterCSS) {
+            const videoElement = document.getElementById('webcam-preview');
+            if (videoElement) {
+                videoElement.style.filter = filterCSS;
+                showToast("Style Filter updated!");
+            }
+        }
+
+
+        const recordTrigger = document.getElementById('record-trigger-btn');
+        const recordBtnCore = document.getElementById('record-btn-core');
+        const progressOverlay = document.getElementById('recording-progress-svg');
+        const progressCircle = document.getElementById('recording-progress-circle');
+
+        if (recordTrigger) {
+            recordTrigger.addEventListener('click', () => {
+                if (!isRecording) {
+                    startRecordingSimulation();
+                } else {
+                    stopRecordingSimulation();
+                }
+            });
+        }
+
+        function startRecordingSimulation() {
+            isRecording = true;
+            showToast("Recording started...");
+            recordBtnCore.classList.remove('bg-tiktokRed', 'rounded-full');
+            recordBtnCore.classList.add('bg-white', 'rounded-lg', 'scale-75');
+            progressOverlay.classList.remove('hidden');
+
+            let elapsedPercent = 0;
+            const dashArray = 276.4;
+
+            recordingTimer = setInterval(() => {
+                elapsedPercent += 1;
+                const offset = dashArray - (dashArray * (elapsedPercent / 100));
+                progressCircle.style.strokeDashoffset = offset;
+
+                if (elapsedPercent >= 100) {
+                    stopRecordingSimulation(true);
+                }
+            }, 150); // Simulates 15 second cycle
+        }
+
+        function stopRecordingSimulation(completed = false) {
+            isRecording = false;
+            clearInterval(recordingTimer);
+            recordBtnCore.classList.add('bg-tiktokRed', 'rounded-full');
+            recordBtnCore.classList.remove('bg-white', 'rounded-lg', 'scale-75');
+            progressOverlay.classList.add('hidden');
+
+            if (completed) {
+                showToast("Video recorded successfully! Ready to upload.");
+                simulateNewVideoPosting();
+            } else {
+                showToast("Recording discarded.");
+            }
+        }
+
+        function simulateNewVideoPosting() {
+            // Append a new simulated creation directly to standard vertical feed on-the-fly!
+            const newClip = {
+                id: Date.now(),
+                url: "https://assets.mixkit.co/videos/preview/mixkit-woman-with-neon-makeup-in-darkness-42220-large.mp4",
+                author: "@tokuser_creative",
+                caption: "New video recorded with neon style filters inside Tok Studio! 🎨⚡ #mystyle #neonvibe",
+                music: "Original Soundtrack - @tokuser_creative",
+                likes: "0",
+                comments: [],
+                shares: "0",
+                liked: false,
+                cover: "https://placehold.co/150x200/111/fff?text=My+Creation"
+            };
+
+            videosData.unshift(newClip); // prepends to beginning
+            activeVideoIndex = 0;
+            renderVideoFeed();
+            switchTab('home');
+            showToast("Video posted to Feed!");
+        }
+
+        // Custom direct upload simulator
+        const uploadBtn = document.getElementById('upload-simulator-btn');
+        if (uploadBtn) {
+            uploadBtn.addEventListener('click', () => {
+                showToast("Simulating system file upload...");
+                setTimeout(() => {
+                    simulateNewVideoPosting();
+                }, 1000);
+            });
+        }
+
+
+        function openDirectMessage(username) {
+            document.getElementById('dm-username').innerText = username;
+            const dmThread = document.getElementById('dm-thread');
+            
+            // Build custom conversation thread based on user selection
+            dmThread.innerHTML = `
+                <div class="flex flex-col gap-1 items-start">
+                    <div class="bg-tiktokGray text-white text-xs px-3 py-2 rounded-2xl max-w-xs rounded-tl-none">Hey! Let me know when you release your next clip.</div>
+                    <span class="text-[8px] text-neutral-500 px-1">Today 11:20</span>
+                </div>
+            `;
+            
+            document.getElementById('dm-box').classList.remove('translate-x-full');
+        }
+
+        function closeDirectMessage() {
+            document.getElementById('dm-box').classList.add('translate-x-full');
+        }
+
+        function sendDirectMessage() {
+            const input = document.getElementById('dm-text-input');
+            const messageText = input.value.trim();
+            if (!messageText) return;
+
+            const dmThread = document.getElementById('dm-thread');
+            const element = `
+                <div class="flex flex-col gap-1 items-end mt-2">
+                    <div class="bg-tiktokRed text-white text-xs px-3 py-2 rounded-2xl max-w-xs rounded-tr-none">${messageText}</div>
+                    <span class="text-[8px] text-neutral-500 px-1">Just now</span>
+                </div>
+            `;
+            dmThread.insertAdjacentHTML('beforeend', element);
+            input.value = '';
+            
+            // Auto scroll to bottom
+            dmThread.scrollTop = dmThread.scrollHeight;
+
+            // Generate auto response mock
+            setTimeout(() => {
+                const autoResp = `
+                    <div class="flex flex-col gap-1 items-start mt-2">
+                        <div class="bg-tiktokGray text-white text-xs px-3 py-2 rounded-2xl max-w-xs rounded-tl-none">Awesome! Looking forward to it! 👍</div>
+                        <span class="text-[8px] text-neutral-500 px-1">Just now</span>
+                    </div>
+                `;
+                dmThread.insertAdjacentHTML('beforeend', autoResp);
+                dmThread.scrollTop = dmThread.scrollHeight;
+            }, 1500);
+        }
+
+
+        function playMockVideoAtIndex(index) {
+            activeVideoIndex = index;
+            renderVideoFeed();
+            switchTab('home');
+            showToast("Playing matching challenge clips!");
+        }
+
+
+        function showToast(text) {
+            const toast = document.getElementById('notification-toast');
+            const message = document.getElementById('toast-message');
+            message.innerText = text;
+            
+            toast.classList.remove('opacity-0', 'translate-y-[-20px]');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-20px]');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 2500);
+        }
+
+        // Camera grant button activation click
+        const grantCamBtn = document.getElementById('grant-camera-btn');
+        if (grantCamBtn) {
+            grantCamBtn.addEventListener('click', () => {
+                initWebcam();
+            });
+        }
+
+
+        window.onload = function() {
+            renderVideoFeed();
+            switchTab('home');
+            
+            // Global play trigger on first window action to safely bypass auto-play lock policies
+            document.body.addEventListener('click', function firstPlayInit() {
+                const video = document.getElementById(`video-el-${activeVideoIndex}`);
+                if (video && video.paused) {
+                    video.play().catch(e => console.log('Interactive start active'));
+                }
+                document.body.removeEventListener('click', firstPlayInit);
+            });
+        };
+    </script>
+</body>
+</html>
